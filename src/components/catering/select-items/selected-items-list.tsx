@@ -193,7 +193,10 @@ export function SelectedItemsList() {
             <div className="fixed lg:hidden right-0 left-0 bottom-0 p-4 px-3 z-10">
                 <div className="w-full bg-white rounded-lg shadow p-3.5 border">
                     <div className="flex justify-between items-center lg:hidden">
-                        <span>{cateringOrder.length} items in the list</span>
+                        <span>
+                            {cateringOrder.length + cateringCustomItem.length}{" "}
+                            items in the list
+                        </span>
                         <OrderListDrawer />
                     </div>
                     <div className="flex justify-between items-center lg:hidden">

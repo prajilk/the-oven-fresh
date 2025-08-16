@@ -9,13 +9,15 @@ import { StoreDocument } from "@/models/types/store";
 
 const StoreSelectStaff = ({
     stores,
-    defaultValue,
+    value,
+    setValue,
 }: {
     stores: StoreDocument[];
-    defaultValue?: string;
+    value: string;
+    setValue: React.Dispatch<React.SetStateAction<string>>;
 }) => {
     return (
-        <Select name="store" defaultValue={defaultValue}>
+        <Select name="store" value={value} onValueChange={setValue}>
             <SelectTrigger className="col-span-3 text-primary">
                 <SelectValue placeholder="Store" />
             </SelectTrigger>

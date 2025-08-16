@@ -1,4 +1,3 @@
-import * as React from "react";
 import { Button } from "@/components/ui/button";
 import {
     Drawer,
@@ -18,13 +17,20 @@ import {
 } from "@/components/ui/dialog";
 import { useSelector } from "react-redux";
 import { RootState } from "@/store";
-import { CateringItemsState } from "@/lib/types/catering/catering-order-state";
+import {
+    CateringCustomItemState,
+    CateringItemsState,
+} from "@/lib/types/catering/catering-order-state";
 import { useMediaQuery } from "@mui/material";
+import { useState } from "react";
 
 export function OrderListDrawer() {
-    const [open, setOpen] = React.useState(false);
+    const [open, setOpen] = useState(false);
     const isDesktop = useMediaQuery("(min-width: 768px)");
     const cateringOrder = useSelector((state: RootState) => state.cateringItem);
+    const cateringCustomItem = useSelector(
+        (state: RootState) => state.cateringCustomItem
+    );
 
     if (isDesktop) {
         return (
@@ -44,7 +50,10 @@ export function OrderListDrawer() {
                     <DialogHeader>
                         <DialogTitle>Order list</DialogTitle>
                     </DialogHeader>
-                    <OrderListDialogContent cateringOrder={cateringOrder} />
+                    <OrderListDialogContent
+                        cateringOrder={cateringOrder}
+                        cateringCustomItem={cateringCustomItem}
+                    />
                 </DialogContent>
             </Dialog>
         );
@@ -68,7 +77,10 @@ export function OrderListDrawer() {
                     <DrawerHeader>
                         <DrawerTitle>Order list</DrawerTitle>
                     </DrawerHeader>
-                    <OrderListDialogContent cateringOrder={cateringOrder} />
+                    <OrderListDialogContent
+                        cateringOrder={cateringOrder}
+                        cateringCustomItem={cateringCustomItem}
+                    />
                     <DrawerFooter />
                 </div>
             </DrawerContent>
@@ -78,13 +90,26 @@ export function OrderListDrawer() {
 
 function OrderListDialogContent({
     cateringOrder,
+    cateringCustomItem,
 }: {
     cateringOrder: CateringItemsState[];
+    cateringCustomItem: CateringCustomItemState[];
 }) {
     return (
         <>
             {cateringOrder.map((item) => (
                 <ItemCardSummary item={item} key={item._id} />
+            ))}
+            {cateringCustomItem.map((item, i) => (
+                <ItemCardSummary
+                    item={{
+                        name: item.name,
+                        size: item.size,
+                        priceAtOrder: item.priceAtOrder,
+                        quantity: 1,
+                    }}
+                    key={item.name + i}
+                />
             ))}
         </>
     );

@@ -1,12 +1,12 @@
 import { CateringItemsState } from "@/lib/types/catering/catering-order-state";
 import Image from "next/image";
 
-function ItemCardSummary({ item }: { item: CateringItemsState }) {
+function ItemCardSummary({ item }: { item: Partial<CateringItemsState> }) {
     return (
         <div className="flex gap-2 px-3">
             <Image
-                src={item.image}
-                alt={item.name}
+                src={item.image || process.env.NEXT_PUBLIC_PLACEHOLDER_IMAGE!}
+                alt={item.name || "image"}
                 width={56}
                 height={56}
                 className="rounded size-14"
@@ -26,7 +26,7 @@ function ItemCardSummary({ item }: { item: CateringItemsState }) {
                 </span>
             </div>
             <div className="mt-auto font-medium">
-                ${item.priceAtOrder * item.quantity}
+                ${item.priceAtOrder! * item.quantity!}
             </div>
         </div>
     );

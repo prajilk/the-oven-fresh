@@ -1,4 +1,3 @@
-import * as React from "react";
 import { Button } from "@/components/ui/button";
 import {
     Drawer,
@@ -17,13 +16,20 @@ import {
 } from "@/components/ui/dialog";
 import { useSelector } from "react-redux";
 import { RootState } from "@/store";
-import { CateringItemsState } from "@/lib/types/catering/catering-order-state";
+import {
+    CateringCustomItemState,
+    CateringItemsState,
+} from "@/lib/types/catering/catering-order-state";
 import { useMediaQuery } from "@mui/material";
+import { useState } from "react";
 
 export function PaymentDetailsDrawer() {
-    const [open, setOpen] = React.useState(false);
+    const [open, setOpen] = useState(false);
     const isDesktop = useMediaQuery("(min-width: 768px)");
     const cateringOrder = useSelector((state: RootState) => state.cateringItem);
+    const cateringCustomItem = useSelector(
+        (state: RootState) => state.cateringCustomItem
+    );
 
     if (isDesktop) {
         return (
@@ -43,7 +49,10 @@ export function PaymentDetailsDrawer() {
                     <DialogHeader>
                         <DialogTitle>Payment details</DialogTitle>
                     </DialogHeader>
-                    <PaymentDialogContent cateringOrder={cateringOrder} />
+                    <PaymentDialogContent
+                        cateringOrder={cateringOrder}
+                        cateringCustomItem={cateringCustomItem}
+                    />
                 </DialogContent>
             </Dialog>
         );
@@ -66,7 +75,10 @@ export function PaymentDetailsDrawer() {
                     <DrawerTitle>Payment details</DrawerTitle>
                 </DrawerHeader>
                 <div className="px-4">
-                    <PaymentDialogContent cateringOrder={cateringOrder} />
+                    <PaymentDialogContent
+                        cateringOrder={cateringOrder}
+                        cateringCustomItem={cateringCustomItem}
+                    />
                 </div>
                 <DrawerFooter />
             </DrawerContent>
@@ -76,14 +88,24 @@ export function PaymentDetailsDrawer() {
 
 function PaymentDialogContent({
     cateringOrder,
+    cateringCustomItem,
 }: {
     cateringOrder: CateringItemsState[];
+    cateringCustomItem: CateringCustomItemState[];
 }) {
     const total = cateringOrder.reduce(
         (acc, item) => acc + item.priceAtOrder * item.quantity,
         0
     );
-    const tax = total * 0.05;
+    const totalCustomItem = cateringCustomItem.reduce(
+        (acc, item) => acc + item.priceAtOrder,
+        0
+    );
+
+    const tax =
+        ((total + totalCustomItem) *
+            Number(process.env.NEXT_PUBLIC_TAX_AMOUNT || 0)) /
+        100;
     const totalPayment = total + tax;
     return (
         <div className="bg-gray-100 rounded-md p-2 mt-1">
@@ -92,7 +114,9 @@ function PaymentDialogContent({
             <div className="space-y-2">
                 <div className="flex justify-between">
                     <span className="text-muted-foreground">Sub Total</span>
-                    <span className="font-medium">${total}</span>
+                    <span className="font-medium">
+                        ${total + totalCustomItem}
+                    </span>
                 </div>
                 <div className="flex justify-between">
                     <span className="text-muted-foreground">Tax</span>

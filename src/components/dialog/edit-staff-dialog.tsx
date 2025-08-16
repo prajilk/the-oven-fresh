@@ -27,6 +27,8 @@ const EditStaffDialog = ({
     staff: UserDocumentPopulate;
 }) => {
     const [loading, setLoading] = useState(false);
+    const [role, setRole] = useState<string>(staff.role);
+    const [store, setStore] = useState<string>(staff.storeId._id);
 
     function handleSubmit(formData: FormData) {
         setLoading(true);
@@ -90,7 +92,7 @@ const EditStaffDialog = ({
                         <Label htmlFor="role" className="text-right">
                             Role
                         </Label>
-                        <RoleSelect defaultValue={staff.role} />
+                        <RoleSelect value={role} setValue={setRole} />
                     </div>
                     <div className="grid grid-cols-4 gap-2 items-center">
                         <Label htmlFor="password" className="text-right">
@@ -109,7 +111,8 @@ const EditStaffDialog = ({
                         </Label>
                         <StoreSelectStaff
                             stores={stores}
-                            defaultValue={staff.storeId._id}
+                            value={store}
+                            setValue={setStore}
                         />
                     </div>
                 </form>

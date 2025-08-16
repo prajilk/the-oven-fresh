@@ -6,9 +6,15 @@ import {
     SelectValue,
 } from "../ui/select";
 
-const RoleSelect = ({ defaultValue }: { defaultValue?: string }) => {
+const RoleSelect = ({
+    value,
+    setValue,
+}: {
+    value: string;
+    setValue: React.Dispatch<React.SetStateAction<string>>;
+}) => {
     return (
-        <Select name="role" defaultValue={defaultValue}>
+        <Select name="role" value={value} onValueChange={setValue}>
             <SelectTrigger className="col-span-3 text-primary">
                 <SelectValue placeholder="Role" />
             </SelectTrigger>

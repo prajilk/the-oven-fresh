@@ -21,6 +21,8 @@ import { StoreDocument } from "@/models/types/store";
 
 const AddStaffDialog = ({ stores }: { stores: StoreDocument[] }) => {
     const [loading, setLoading] = useState(false);
+    const [role, setRole] = useState<string>("");
+    const [store, setStore] = useState<string>("");
 
     function handleSubmit(formData: FormData) {
         setLoading(true);
@@ -37,6 +39,8 @@ const AddStaffDialog = ({ stores }: { stores: StoreDocument[] }) => {
             new Promise(async (resolve, reject) => {
                 const result = await addStaffAction(formData);
                 setLoading(false);
+                setRole("");
+                setStore("");
                 if (result.success) resolve(result);
                 else reject(result);
             });
@@ -78,7 +82,7 @@ const AddStaffDialog = ({ stores }: { stores: StoreDocument[] }) => {
                         <Label htmlFor="role" className="text-right">
                             Role
                         </Label>
-                        <RoleSelect />
+                        <RoleSelect value={role} setValue={setRole} />
                     </div>
                     <div className="grid grid-cols-4 gap-2 items-center">
                         <Label htmlFor="password" className="text-right">
@@ -94,7 +98,11 @@ const AddStaffDialog = ({ stores }: { stores: StoreDocument[] }) => {
                         <Label htmlFor="store" className="text-right">
                             Store
                         </Label>
-                        <StoreSelectStaff stores={stores} />
+                        <StoreSelectStaff
+                            stores={stores}
+                            value={store}
+                            setValue={setStore}
+                        />
                     </div>
                 </form>
                 <DialogFooter className="flex justify-end">

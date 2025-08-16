@@ -452,7 +452,7 @@ export default function TiffinForm() {
                         control={form.control}
                         name="payment_method"
                         render={() => (
-                            <FormItem>
+                            <FormItem className="pt-3 md:pt-0">
                                 <FormLabel>Payment Method</FormLabel>
                                 <PaymentSelect form={form} />
                                 <FormDescription>

@@ -71,10 +71,7 @@ const DeliveryProof = () => {
                         ) : (
                             deliveryProofs?.pages.map((page) => {
                                 return page?.map((order) => (
-                                    <ProofCard
-                                        order={order}
-                                        key={order.order_id}
-                                    />
+                                    <ProofCard order={order} key={order._id} />
                                 ));
                             })
                         )}
@@ -87,7 +84,8 @@ const DeliveryProof = () => {
                     disabled={
                         isFetchingNextPage ||
                         isPending ||
-                        deliveryProofs?.pages.at(-1)?.length !== 0
+                        deliveryProofs?.pages.at(-1)?.length !== 0 ||
+                        deliveryProofs.pages[0]?.length === 0
                     }
                     onClick={() => fetchNextPage()}
                     className="w-fit"
