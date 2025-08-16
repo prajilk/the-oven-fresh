@@ -6,7 +6,7 @@ import Address from "@/models/addressModel";
 import Tiffin from "@/models/tiffinModel";
 import { TiffinDocumentPopulate } from "@/models/types/tiffin";
 
-const TestPage = async ({
+const TiffinSummaryPage = async ({
     searchParams,
 }: {
     searchParams?: Promise<{ [key: string]: string | string[] | undefined }>;
@@ -59,4 +59,4 @@ const TestPage = async ({
     );
 };
 
-export default TestPage;
+export default TiffinSummaryPage;
