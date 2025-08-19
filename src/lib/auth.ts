@@ -1,132 +1,125 @@
-import connectDB from "@/lib/mongodb";
-import User from "@/models/userModel";
-import type { NextAuthOptions } from "next-auth";
-import credentials from "next-auth/providers/credentials";
-import bcrypt from "bcryptjs";
+import { betterAuth } from 'better-auth';
+import { mongodbAdapter } from 'better-auth/adapters/mongodb';
+import {
+  admin as adminPlugin,
+  createAuthMiddleware,
+  username,
+} from 'better-auth/plugins';
+import mongoose from 'mongoose';
+import { headers } from 'next/headers';
+import connectDB from '@/config/mongoose';
+import { ac, admin, delivery, manager } from './permissions';
 
-export const authOptions: NextAuthOptions = {
-    secret: process.env.NEXTAUTH_SECRET,
-    session: {
-        strategy: "jwt",
-        maxAge: 7 * 24 * 60 * 60, // 7 day in seconds
-    },
-    jwt: {
-        maxAge: 7 * 24 * 60 * 60, // 7 day in seconds
-    },
-    pages: {
-        signIn: "/",
-    },
-    providers: [
-        credentials({
-            name: "Credentials",
-            id: "credentials",
-            credentials: {
-                username: { label: "Username", type: "text" },
-                password: { label: "Password", type: "password" },
-            },
-            async authorize(credentials) {
-                await connectDB();
-                const user = await User.findOne({
-                    username: credentials?.username.toLowerCase(),
-                }).select("+password");
+const mongooseConn = await connectDB();
 
-                if (!user) throw new Error("Invalid username or password");
-
-                const passwordMatch = await bcrypt.compare(
-                    credentials!.password,
-                    user.password
-                );
-
-                if (!passwordMatch)
-                    throw new Error("Invalid username or password");
-                return {
-                    id: user._id,
-                    username: user.username,
-                    role: user.role,
-                    storeId: user.storeId,
-                    tokenVersion: user.tokenVersion,
-                };
-            },
-        }),
-    ],
-    callbacks: {
-        // async jwt({ token, user, trigger, session }) {
-        //     if (trigger === "update") {
-        //         return { ...token, ...session.user };
-        //     }
-        //     if (user) {
-        //         return {
-        //             ...token,
-        //             id: user.id,
-        //             role: user.role,
-        //             storeId: user.storeId?.toString(),
-        //         };
-        //     }
-        //     return token;
-        // },
-        async jwt({ token, user, trigger, session }) {
-            if (user) {
-                token.id = user.id;
-                token.username = user.username;
-                token.role = user.role;
-                token.storeId = user.storeId;
-            }
-
-            // Allow storeId update from client
-            if (trigger === "update" && session?.storeId) {
-                token.storeId = session.storeId;
-            }
-
-            return token;
+export const auth = betterAuth({
+  database: mongodbAdapter(mongooseConn.connection.db),
+  plugins: [
+    username(),
+    adminPlugin({
+      ac,
+      roles: {
+        admin,
+        manager,
+        delivery,
+      },
+    }),
+  ],
+  user: {
+    additionalFields: {
+      role: {
+        type: 'string',
+        required: true,
+        defaultValue: 'manager',
+        input: true,
+        returned: true,
+      },
+      storeId: {
+        type: 'string',
+        required: true,
+        input: true,
+        references: {
+          model: 'Store',
+          field: '_id',
         },
-        // async session({ session, token }) {
-        //     try {
-        //         if (token.sub) {
-        //             await connectDB();
-        //             const user = await User.findById(token.sub);
-
-        //             if (user) {
-        //                 return {
-        //                     ...session,
-        //                     user: {
-        //                         id: token.sub,
-        //                         role: user?.role,
-        //                         username: user?.username,
-        //                         isAuthenticated: false,
-        //                         storeId: user?.storeId?.toString(),
-        //                     },
-        //                 };
-        //             }
-        //         }
-        //     } catch {
-        //         return {
-        //             ...session,
-        //             user: {
-        //                 ...session.user,
-        //                 id: token.sub,
-        //                 role: token.role,
-        //                 isAuthenticated: false,
-        //             },
-        //         };
-        //     }
-        //     return {
-        //         ...session,
-        //         user: {
-        //             ...session.user,
-        //             id: token.sub,
-        //             role: token.role,
-        //             isAuthenticated: true,
-        //         },
-        //     };
-        // },
-        async session({ session, token }) {
-            session.user = {
-                id: token.id as string,
-                username: token.username as string,
-                role: token.role as string,
-                storeId: token.storeId as string,
-            };
-            return session;
-        },
+      },
+      zone: {
+        type: 'number',
+        required: false,
+        defaultValue: null,
+        input: true,
+      },
     },
-};
+    deleteUser: {
+      enabled: true,
+    },
+  },
+  databaseHooks: {
+    user: {
+      create: {
+        // biome-ignore lint/suspicious/useAwait: <before function should be returning a Promise>
+        before: async (user) => {
+          const u = user as typeof user & {
+            storeId: string;
+          };
+          return {
+            data: {
+              ...u,
+              storeId: mongoose.Types.ObjectId.createFromHexString(u.storeId),
+            },
+          };
+        },
+      },
+      update: {
+        // biome-ignore lint/suspicious/useAwait: <before function should be returning a Promise>
+        before: async (user) => {
+          const u = user as typeof user & {
+            storeId: string;
+          };
+          return {
+            data: {
+              ...u,
+              storeId: mongoose.Types.ObjectId.createFromHexString(u.storeId),
+            },
+          };
+        },
+      },
+    },
+  },
+  hooks: {
+    after: createAuthMiddleware(async (ctx) => {
+      if (ctx.path === '/sign-in/username') {
+        // what the endpoint just returned
+        const returned = ctx.context.returned as
+          | { token: string; user: { id: string } }
+          | undefined;
+
+        if (!returned?.user?.id) {
+          return;
+        } // nothing to do
+
+        // fetch only what you need
+        const dbUser = (await ctx.context.adapter.findOne({
+          model: 'user',
+          where: [{ field: 'id', value: returned.user.id }],
+          select: ['role'],
+        })) as { role: string };
+
+        return ctx.json({
+          ...returned,
+          user: {
+            ...returned.user,
+            role: dbUser?.role ?? null,
+          },
+        });
+      }
+    }),
+  },
+});
+
+export async function getCurrentUser() {
+  const session = await auth.api.getSession({
+    headers: await headers(),
+  });
+  return session?.user || null;
+}

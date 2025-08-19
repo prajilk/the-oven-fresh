@@ -1,70 +1,80 @@
-"use client";
+'use client';
 
-import React from "react";
+import { MapPin } from 'lucide-react';
+import { useState } from 'react';
+import { useDispatch, useSelector } from 'react-redux';
+import { toast } from 'sonner';
+import { authClient } from '@/lib/auth-client';
+import getQueryClient from '@/lib/query-utils/get-query-client';
+import type { RootState } from '@/store';
+import { setState } from '@/store/slices/select-store-slice';
 import {
-    Select,
-    SelectContent,
-    SelectItem,
-    SelectTrigger,
-    SelectValue,
-} from "../ui/select";
-import { MapPin } from "lucide-react";
-import { useSession } from "next-auth/react";
-import getQueryClient from "@/lib/query-utils/get-query-client";
-import { useSelector } from "react-redux";
-import { RootState } from "@/store";
-import { useDispatch } from "react-redux";
-import { setState } from "@/store/slices/selectStoreSlice";
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from '../ui/select';
 
 const StoreSelect = ({
-    stores,
+  stores,
 }: {
-    stores: { id: string; location: string }[];
+  stores: { id: string; location: string }[];
 }) => {
-    const { update } = useSession();
-    const queryClient = getQueryClient();
-    const value = useSelector((state: RootState) => state.selectStore);
-    const dispatch = useDispatch();
+  const [loading, setLoading] = useState(false);
+  const queryClient = getQueryClient();
+  const value = useSelector((state: RootState) => state.selectStore);
+  const dispatch = useDispatch();
 
-    const onValueChange = async (newStoreId: string) => {
-        dispatch(setState(newStoreId));
-        await update({ storeId: newStoreId });
-        await Promise.all([
-            queryClient.invalidateQueries({
-                queryKey: ["order"],
-            }),
-            queryClient.invalidateQueries({
-                queryKey: ["groceries"],
-            }),
-            queryClient.invalidateQueries({
-                queryKey: ["stores"],
-            }),
-        ]);
-    };
+  const onValueChange = async (newStoreId: string) => {
+    try {
+      setLoading(true);
+      dispatch(setState(newStoreId));
+      await authClient.updateUser({
+        storeId: newStoreId,
+      });
+      await Promise.all([
+        queryClient.invalidateQueries({
+          queryKey: ['order'],
+        }),
+        queryClient.invalidateQueries({
+          queryKey: ['groceries'],
+        }),
+        queryClient.invalidateQueries({
+          queryKey: ['stores'],
+        }),
+      ]);
+    } catch (error) {
+      toast.error(
+        error instanceof Error ? error.message : 'Failed to switch store'
+      );
+    } finally {
+      setLoading(false);
+    }
+  };
 
-    return (
-        <Select
-            value={value} // Watch the selected value
-            onValueChange={onValueChange} // Call the onValueChange function when the value changes
-        >
-            <SelectTrigger
-                className="bg-primary-foreground !text-primary w-fit md:w-auto"
-                data-placeholder="Store"
-            >
-                <>
-                    <MapPin className="size-4" />
-                    <SelectValue placeholder="Store" />
-                </>
-            </SelectTrigger>
-            <SelectContent className="text-primary z-[1210] bg-primary-foreground lg:bg-white">
-                {stores.map((store, i) => (
-                    <SelectItem value={store.id} key={i}>
-                        {store.location}
-                    </SelectItem>
-                ))}
-            </SelectContent>
-        </Select>
-    );
+  return (
+    <Select
+      disabled={loading}
+      onValueChange={onValueChange} // Watch the selected value
+      value={value} // Call the onValueChange function when the value changes
+    >
+      <SelectTrigger
+        className="!text-primary w-fit bg-primary-foreground md:w-auto"
+        data-placeholder="Store"
+      >
+        <MapPin className="size-4" />
+        <SelectValue placeholder="Store" />
+      </SelectTrigger>
+      <SelectContent className="z-[1210] bg-primary-foreground text-primary lg:bg-white">
+        {stores.map((store) => (
+          <SelectItem key={store.id} value={store.id}>
+            {loading ? 'Loading...' : store.location}
+          </SelectItem>
+        ))}
+      </SelectContent>
+    </Select>
+  );
 };
 
 export default StoreSelect;

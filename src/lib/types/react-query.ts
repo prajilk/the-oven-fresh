@@ -1,3 +1,3 @@
 export type OnErrorType = {
-    response: { status: number; data: { message?: string } };
+  response: { status: number; data: { message?: string } };
 };

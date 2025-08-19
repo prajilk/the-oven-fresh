@@ -1,33 +1,33 @@
-"use client";
+'use client';
 
-import { signOut } from "next-auth/react";
-import { toast } from "sonner";
-import { Button } from "./ui/button";
+import { useRouter } from 'next/navigation';
+import { toast } from 'sonner';
+import { authClient } from '@/lib/auth-client';
+import { Button } from './ui/button';
 
 const SignOutButton = ({
-    children,
-    className,
+  children,
+  className,
 }: {
-    children?: React.ReactNode;
-    className?: string;
+  children?: React.ReactNode;
+  className?: string;
 }) => {
-    async function handleSignOut() {
-        try {
-            await signOut({
-                redirect: true,
-                callbackUrl: "/",
-            });
-            toast.success("Signed out successfully.");
-        } catch {
-            toast.error("Something went wrong");
-        }
+  const router = useRouter();
+  async function handleSignOut() {
+    try {
+      await authClient.signOut();
+      toast.success('Signed out successfully.');
+      router.push('/');
+    } catch {
+      toast.error('Something went wrong');
     }
+  }
 
-    return (
-        <Button onClick={handleSignOut} color="primary" className={className}>
-            {children ? children : "Sign out"}
-        </Button>
-    );
+  return (
+    <Button className={className} color="primary" onClick={handleSignOut}>
+      {children ? children : 'Sign out'}
+    </Button>
+  );
 };
 
 export default SignOutButton;

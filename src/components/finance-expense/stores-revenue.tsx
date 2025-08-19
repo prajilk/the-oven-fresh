@@ -1,31 +1,29 @@
-"use client";
+'use client';
 
-import { useStoresRevenue } from "@/api-hooks/admin/get-stores-revenue";
-import RevenueStatCard from "./revenue-stat-card";
-import RevenueStatCardSkeleton from "../skeleton/revenue-stat-card-skeleton";
-import { useSelector } from "react-redux";
-import { RootState } from "@/store";
+import { useSelector } from 'react-redux';
+import { useStoresRevenue } from '@/api-hooks/admin/get-stores-revenue';
+import type { RootState } from '@/store';
+import RevenueStatCardSkeleton from '../skeleton/revenue-stat-card-skeleton';
+import RevenueStatCard from './revenue-stat-card';
 
 const StoresRevenue = () => {
-    const yearFilter = useSelector((state: RootState) => state.selectYear);
-    const { data, isPending } = useStoresRevenue(yearFilter);
-    if (isPending)
-        return (
-            <>
-                <RevenueStatCardSkeleton />
-            </>
-        );
-    return (
-        <>
-            {data?.map((store, i) => (
-                <RevenueStatCard
-                    title={`Revenue - ${store.location}`}
-                    data={store.data}
-                    key={i}
-                />
-            ))}
-        </>
-    );
+  const yearFilter = useSelector((state: RootState) => state.selectYear);
+  const { data, isPending } = useStoresRevenue(yearFilter);
+  if (isPending) {
+    return <RevenueStatCardSkeleton />;
+  }
+
+  return (
+    <>
+      {data?.map((store) => (
+        <RevenueStatCard
+          data={store.data}
+          key={store.location}
+          title={`Revenue - ${store.location}`}
+        />
+      ))}
+    </>
+  );
 };
 
 export default StoresRevenue;

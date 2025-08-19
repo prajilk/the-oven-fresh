@@ -1,19 +1,14 @@
-"use client";
+'use client';
 
-import CateringOrderTable from "../data-table/catering/catering-order-table";
-import { useCateringOrders } from "@/api-hooks/catering/get-catering-orders";
+import { useCateringOrders } from '@/api-hooks/catering/get-catering-orders';
+import CateringOrderTable from '../data-table/catering/catering-order-table';
 
 const CateringOrders = () => {
-    const { data: cateringOrders, isPending } = useCateringOrders();
+  const { data: cateringOrders, isPending } = useCateringOrders();
 
-    return (
-        <>
-            <CateringOrderTable
-                orders={cateringOrders || []}
-                isPending={isPending}
-            />
-        </>
-    );
+  return (
+    <CateringOrderTable isPending={isPending} orders={cateringOrders || []} />
+  );
 };
 
 export default CateringOrders;

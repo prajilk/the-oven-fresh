@@ -1,49 +1,47 @@
-import { Popover, PopoverContent, PopoverTrigger } from "../ui/popover";
-import { Calendar } from "../ui/calendar";
-import { format } from "date-fns";
-import { Button } from "@heroui/button";
-import { Filter } from "lucide-react";
+import { Button } from '@heroui/button';
+import { format } from 'date-fns';
+import { Filter } from 'lucide-react';
+import { Calendar } from '../ui/calendar';
+import { Popover, PopoverContent, PopoverTrigger } from '../ui/popover';
 
 const DateFilter = ({
-    date,
-    onSelect,
-    footer,
+  date,
+  onSelect,
+  footer,
 }: {
-    date: Date;
-    onSelect: (date: Date) => void;
-    footer?: string;
+  date: Date;
+  onSelect: (date: Date) => void;
+  footer?: string;
 }) => {
-    return (
-        <Popover>
-            <PopoverTrigger asChild>
-                <Button
-                    startContent={<Filter className="h-4 w-4" />}
-                    size="sm"
-                    variant="bordered"
-                    className="rounded-md bg-white border border-dashed shadow-sm h-9"
-                >
-                    Filter by date
-                </Button>
-            </PopoverTrigger>
-            <PopoverContent className="w-auto p-0" align="start">
-                <Calendar
-                    initialFocus
-                    mode="single"
-                    defaultMonth={date}
-                    selected={date || new Date()}
-                    required
-                    onSelect={(date) => onSelect(date as Date)}
-                    footer={
-                        <span className="text-xs text-muted-foreground">
-                            {footer +
-                                " " +
-                                format(date || new Date(), "yyyy-MM-dd")}
-                        </span>
-                    }
-                />
-            </PopoverContent>
-        </Popover>
-    );
+  return (
+    <Popover>
+      <PopoverTrigger asChild>
+        <Button
+          className="h-9 rounded-md border border-dashed bg-white shadow-sm"
+          size="sm"
+          startContent={<Filter className="h-4 w-4" />}
+          variant="bordered"
+        >
+          Filter by date
+        </Button>
+      </PopoverTrigger>
+      <PopoverContent align="start" className="w-auto p-0">
+        <Calendar
+          defaultMonth={date}
+          footer={
+            <span className="text-muted-foreground text-xs">
+              {`${footer} ${format(date || new Date(), 'yyyy-MM-dd')}`}
+            </span>
+          }
+          initialFocus
+          mode="single"
+          onSelect={(date) => onSelect(date as Date)}
+          required
+          selected={date || new Date()}
+        />
+      </PopoverContent>
+    </Popover>
+  );
 };
 
 export default DateFilter;

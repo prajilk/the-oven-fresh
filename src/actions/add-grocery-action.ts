@@ -1,51 +1,49 @@
-"use server";
+'use server';
 
-import { ZodGrocerySchema } from "@/lib/zod-schema/schema";
-import { revalidatePath } from "next/cache";
-import Grocery from "@/models/groceryModel";
-import { getServerSession } from "next-auth";
-import { authOptions } from "@/lib/auth";
-import { withDbConnectAndActionAuth } from "@/lib/withDbConnectAndAuth";
+import { revalidatePath } from 'next/cache';
+import { withDbConnectAndActionAuth } from '@/lib/with-db-connect-and-auth';
+import { ZodGrocerySchema } from '@/lib/zod-schema/schema';
+import Grocery from '@/models/groceryModel';
 
 export async function addGroceryAction(formData: FormData) {
-    try {
-        // Authorize the user
-        await withDbConnectAndActionAuth();
+  try {
+    // Authorize the user
+    const { user } = await withDbConnectAndActionAuth();
 
-        const session = await getServerSession(authOptions);
-        const storeId = session?.user?.storeId;
-        if (!storeId) return { error: "Store not found." };
-
-        const result = ZodGrocerySchema.safeParse(
-            Object.fromEntries(formData.entries())
-        );
-
-        if (!result.success) {
-            return { error: "Invalid data format." };
-        }
-
-        const box = formData.get("box") === "true" ? true : false;
-
-        await Grocery.create({
-            store: storeId,
-            item: result.data.item,
-            quantity: box ? null : result.data.quantity,
-            unit: box ? "Box" : result.data.unit,
-            price: result.data.price,
-            tax: result.data.tax,
-            total: result.data.total,
-            purchasedFrom: result.data.purchasedFrom,
-            date: result.data.date,
-        });
-
-        revalidatePath("/dashboard/groceries");
-
-        return { success: true };
-    } catch (error) {
-        if (error instanceof Error) {
-            return { error: error.message };
-        } else {
-            return { error: "An unknown error occurred" };
-        }
+    const storeId = user?.storeId;
+    if (!storeId) {
+      return { error: 'Store not found.' };
     }
+
+    const result = ZodGrocerySchema.safeParse(
+      Object.fromEntries(formData.entries())
+    );
+
+    if (!result.success) {
+      return { error: 'Invalid data format.' };
+    }
+
+    const box = formData.get('box') === 'true';
+
+    await Grocery.create({
+      store: storeId,
+      item: result.data.item,
+      quantity: box ? null : result.data.quantity,
+      unit: box ? 'Box' : result.data.unit,
+      price: result.data.price,
+      tax: result.data.tax,
+      total: result.data.total,
+      purchasedFrom: result.data.purchasedFrom,
+      date: result.data.date,
+    });
+
+    revalidatePath('/dashboard/groceries');
+
+    return { success: true };
+  } catch (error) {
+    if (error instanceof Error) {
+      return { error: error.message };
+    }
+    return { error: 'An unknown error occurred' };
+  }
 }

@@ -1,141 +1,144 @@
-import { Info, Pencil } from "lucide-react";
+import { Pencil } from 'lucide-react';
+import { useState } from 'react';
+import { toast } from 'sonner';
+import { editStaffAction } from '@/actions/edit-staff-action';
+import { ZodUserSchemaWithPassword } from '@/lib/zod-schema/schema';
+import type { StoreDocument } from '@/models/types/store';
+import type { UserDocumentPopulate } from '@/models/types/user';
+import RoleSelect from '../select/role-select';
+import StoreSelectStaff from '../select/store-select-staff';
 import {
-    Dialog,
-    DialogContent,
-    DialogFooter,
-    DialogHeader,
-    DialogTitle,
-    DialogTrigger,
-} from "../ui/dialog";
-import { Label } from "../ui/label";
-import { Input } from "../ui/input";
-import StoreSelectStaff from "../select/store-select-staff";
-import RoleSelect from "../select/role-select";
-import LoadingButton from "../ui/loading-button";
-import { ZodUserSchemaWithPassword } from "@/lib/zod-schema/schema";
-import { toast } from "sonner";
-import { useState } from "react";
-import { UserDocumentPopulate } from "@/models/types/user";
-import { StoreDocument } from "@/models/types/store";
-import { editStaffAction } from "@/actions/edit-staff-action";
+  Dialog,
+  DialogContent,
+  DialogFooter,
+  DialogHeader,
+  DialogTitle,
+  DialogTrigger,
+} from '../ui/dialog';
+import { Input } from '../ui/input';
+import { Label } from '../ui/label';
+import LoadingButton from '../ui/loading-button';
 
 const EditStaffDialog = ({
-    stores,
-    staff,
+  stores,
+  staff,
 }: {
-    stores: StoreDocument[];
-    staff: UserDocumentPopulate;
+  stores: StoreDocument[];
+  staff: UserDocumentPopulate;
 }) => {
-    const [loading, setLoading] = useState(false);
-    const [role, setRole] = useState<string>(staff.role);
-    const [store, setStore] = useState<string>(staff.storeId._id);
+  const [loading, setLoading] = useState(false);
+  const [role, setRole] = useState<string>(staff.role);
+  const [store, setStore] = useState<string>(staff.store._id);
 
-    function handleSubmit(formData: FormData) {
-        setLoading(true);
+  function handleSubmit(formData: FormData) {
+    setLoading(true);
 
-        const data = Object.fromEntries(formData);
+    const data = Object.fromEntries(formData);
 
-        const result = ZodUserSchemaWithPassword.safeParse(data);
-        if (!result.success) {
-            toast.error("Invalid data format.");
-            setLoading(false);
-            return;
-        }
+    const result = ZodUserSchemaWithPassword.safeParse(data);
 
-        formData.set("id", staff._id);
-
-        const promise = () =>
-            new Promise(async (resolve, reject) => {
-                const result = await editStaffAction(formData);
-                setLoading(false);
-                if (result.success) resolve(result);
-                else reject(result);
-            });
-
-        toast.promise(promise, {
-            loading: "Updating staff...",
-            success: () => "Staff updated successfully.",
-            error: ({ error }) => (error ? error : "Failed to update staff."),
-        });
+    if (!result.success) {
+      toast.error('Invalid data format.');
+      setLoading(false);
+      return;
     }
-    return (
-        <Dialog>
-            <DialogTrigger asChild>
-                <button>
-                    <Pencil
-                        size={18}
-                        className="stroke-2 text-muted-foreground"
-                    />
-                </button>
-            </DialogTrigger>
-            <DialogContent className="sm:max-w-[425px]">
-                <DialogHeader>
-                    <DialogTitle>Edit staff</DialogTitle>
-                </DialogHeader>
-                <form
-                    id="edit-staff-form"
-                    action={handleSubmit}
-                    className="grid gap-4 py-4"
-                >
-                    <div className="grid grid-cols-4 gap-2 items-center">
-                        <Label htmlFor="username" className="text-right">
-                            Username
-                        </Label>
-                        <Input
-                            placeholder="Username"
-                            name="username"
-                            className="col-span-3"
-                            defaultValue={staff.username}
-                        />
-                    </div>
-                    <div className="grid grid-cols-4 gap-2 items-center">
-                        <Label htmlFor="role" className="text-right">
-                            Role
-                        </Label>
-                        <RoleSelect value={role} setValue={setRole} />
-                    </div>
-                    <div className="grid grid-cols-4 gap-2 items-center">
-                        <Label htmlFor="password" className="text-right">
-                            Password
-                        </Label>
-                        <Input
-                            placeholder="Password"
-                            name="password"
-                            className="col-span-3"
-                            defaultValue={staff.password}
-                        />
-                    </div>
-                    <div className="grid grid-cols-4 gap-2 items-center">
-                        <Label htmlFor="store" className="text-right">
-                            Store
-                        </Label>
-                        <StoreSelectStaff
-                            stores={stores}
-                            value={store}
-                            setValue={setStore}
-                        />
-                    </div>
-                </form>
-                <div className="flex items-center gap-1">
-                    <Info className="size-4" />
-                    <span className="text-xs">
-                        Staff need to log out and log back in to see the
-                        changes.
-                    </span>
-                </div>
-                <DialogFooter className="flex justify-end">
-                    <LoadingButton
-                        isLoading={loading}
-                        size={"sm"}
-                        type="submit"
-                        form="edit-staff-form"
-                    >
-                        Update
-                    </LoadingButton>
-                </DialogFooter>
-            </DialogContent>
-        </Dialog>
-    );
+
+    formData.set('id', staff._id);
+
+    const promise = async () => {
+      const result = await editStaffAction(formData);
+      setLoading(false);
+      if (result.success) {
+        return result;
+      }
+      throw result;
+    };
+
+    toast.promise(promise(), {
+      loading: 'Updating staff...',
+      success: () => 'Staff updated successfully.',
+      error: ({ error }) => (error ? error : 'Failed to update staff.'),
+    });
+  }
+
+  return (
+    <Dialog>
+      <DialogTrigger asChild>
+        <button type="button">
+          <Pencil className="stroke-2 text-muted-foreground" size={18} />
+        </button>
+      </DialogTrigger>
+      <DialogContent className="sm:max-w-[425px]">
+        <DialogHeader>
+          <DialogTitle>Edit staff</DialogTitle>
+        </DialogHeader>
+        <form
+          action={handleSubmit}
+          className="grid gap-4 py-4"
+          id="edit-staff-form"
+        >
+          <div className="grid grid-cols-4 items-center gap-2">
+            <Label className="text-right" htmlFor="username">
+              Username
+            </Label>
+            <Input
+              className="col-span-3"
+              defaultValue={staff.username}
+              name="username"
+              placeholder="Username"
+            />
+          </div>
+          <div className="grid grid-cols-4 items-center gap-2">
+            <Label className="text-right" htmlFor="displayUsername">
+              Display Name
+            </Label>
+            <Input
+              className="col-span-3"
+              defaultValue={staff.displayUsername}
+              name="displayUsername"
+              placeholder="Display Name"
+            />
+          </div>
+          <div className="grid grid-cols-4 items-center gap-2">
+            <Label className="text-right" htmlFor="role">
+              Role
+            </Label>
+            <RoleSelect setValue={setRole} value={role} />
+          </div>
+          <div className="grid grid-cols-4 items-center gap-2">
+            <Label className="text-right" htmlFor="password">
+              Password
+            </Label>
+            <Input
+              className="col-span-3"
+              name="password"
+              placeholder="Password"
+            />
+          </div>
+          <div className="grid grid-cols-4 items-center gap-2">
+            <Label className="text-right" htmlFor="store">
+              Store
+            </Label>
+            <StoreSelectStaff
+              setValue={setStore}
+              stores={stores}
+              value={store}
+            />
+          </div>
+        </form>
+        <DialogFooter className="flex justify-end">
+          <LoadingButton
+            form="edit-staff-form"
+            isLoading={loading}
+            size={'sm'}
+            type="submit"
+          >
+            Update
+          </LoadingButton>
+        </DialogFooter>
+      </DialogContent>
+    </Dialog>
+  );
 };
 
 export default EditStaffDialog;

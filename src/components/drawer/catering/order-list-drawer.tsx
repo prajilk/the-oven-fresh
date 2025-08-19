@@ -1,116 +1,116 @@
-import { Button } from "@/components/ui/button";
+import { useMediaQuery } from '@mui/material';
+import { useState } from 'react';
+import { useSelector } from 'react-redux';
+import ItemCardSummary from '@/components/catering/select-items/item-card-summary';
+import { Button } from '@/components/ui/button';
 import {
-    Drawer,
-    DrawerContent,
-    DrawerFooter,
-    DrawerHeader,
-    DrawerTitle,
-    DrawerTrigger,
-} from "@/components/ui/drawer";
-import ItemCardSummary from "@/components/catering/select-items/item-card-summary";
+  Dialog,
+  DialogContent,
+  DialogHeader,
+  DialogTitle,
+  DialogTrigger,
+} from '@/components/ui/dialog';
 import {
-    Dialog,
-    DialogContent,
-    DialogHeader,
-    DialogTitle,
-    DialogTrigger,
-} from "@/components/ui/dialog";
-import { useSelector } from "react-redux";
-import { RootState } from "@/store";
-import {
-    CateringCustomItemState,
-    CateringItemsState,
-} from "@/lib/types/catering/catering-order-state";
-import { useMediaQuery } from "@mui/material";
-import { useState } from "react";
+  Drawer,
+  DrawerContent,
+  DrawerFooter,
+  DrawerHeader,
+  DrawerTitle,
+  DrawerTrigger,
+} from '@/components/ui/drawer';
+import type {
+  CateringCustomItemState,
+  CateringItemsState,
+} from '@/lib/types/catering/catering-order-state';
+import type { RootState } from '@/store';
 
 export function OrderListDrawer() {
-    const [open, setOpen] = useState(false);
-    const isDesktop = useMediaQuery("(min-width: 768px)");
-    const cateringOrder = useSelector((state: RootState) => state.cateringItem);
-    const cateringCustomItem = useSelector(
-        (state: RootState) => state.cateringCustomItem
-    );
+  const [open, setOpen] = useState(false);
+  const isDesktop = useMediaQuery('(min-width: 768px)');
+  const cateringOrder = useSelector((state: RootState) => state.cateringItem);
+  const cateringCustomItem = useSelector(
+    (state: RootState) => state.cateringCustomItem
+  );
 
-    if (isDesktop) {
-        return (
-            <Dialog open={open} onOpenChange={setOpen}>
-                <DialogTrigger asChild>
-                    <Button
-                        variant={"link"}
-                        size={"sm"}
-                        className="underline"
-                        type="button"
-                        disabled={!cateringOrder.length}
-                    >
-                        View order list
-                    </Button>
-                </DialogTrigger>
-                <DialogContent className="flex flex-col max-w-xl z-[1550]">
-                    <DialogHeader>
-                        <DialogTitle>Order list</DialogTitle>
-                    </DialogHeader>
-                    <OrderListDialogContent
-                        cateringOrder={cateringOrder}
-                        cateringCustomItem={cateringCustomItem}
-                    />
-                </DialogContent>
-            </Dialog>
-        );
-    }
-
+  if (isDesktop) {
     return (
-        <Drawer>
-            <DrawerTrigger asChild>
-                <Button
-                    variant={"link"}
-                    size={"sm"}
-                    className="underline"
-                    disabled={!cateringOrder.length}
-                    type="button"
-                >
-                    View order list
-                </Button>
-            </DrawerTrigger>
-            <DrawerContent>
-                <div className="mx-auto w-full max-w-sm">
-                    <DrawerHeader>
-                        <DrawerTitle>Order list</DrawerTitle>
-                    </DrawerHeader>
-                    <OrderListDialogContent
-                        cateringOrder={cateringOrder}
-                        cateringCustomItem={cateringCustomItem}
-                    />
-                    <DrawerFooter />
-                </div>
-            </DrawerContent>
-        </Drawer>
+      <Dialog onOpenChange={setOpen} open={open}>
+        <DialogTrigger asChild>
+          <Button
+            className="underline"
+            disabled={!cateringOrder.length}
+            size={'sm'}
+            type="button"
+            variant={'link'}
+          >
+            View order list
+          </Button>
+        </DialogTrigger>
+        <DialogContent className="z-[1550] flex max-w-xl flex-col">
+          <DialogHeader>
+            <DialogTitle>Order list</DialogTitle>
+          </DialogHeader>
+          <OrderListDialogContent
+            cateringCustomItem={cateringCustomItem}
+            cateringOrder={cateringOrder}
+          />
+        </DialogContent>
+      </Dialog>
     );
+  }
+
+  return (
+    <Drawer>
+      <DrawerTrigger asChild>
+        <Button
+          className="underline"
+          disabled={!cateringOrder.length}
+          size={'sm'}
+          type="button"
+          variant={'link'}
+        >
+          View order list
+        </Button>
+      </DrawerTrigger>
+      <DrawerContent>
+        <div className="mx-auto w-full max-w-sm">
+          <DrawerHeader>
+            <DrawerTitle>Order list</DrawerTitle>
+          </DrawerHeader>
+          <OrderListDialogContent
+            cateringCustomItem={cateringCustomItem}
+            cateringOrder={cateringOrder}
+          />
+          <DrawerFooter />
+        </div>
+      </DrawerContent>
+    </Drawer>
+  );
 }
 
 function OrderListDialogContent({
-    cateringOrder,
-    cateringCustomItem,
+  cateringOrder,
+  cateringCustomItem,
 }: {
-    cateringOrder: CateringItemsState[];
-    cateringCustomItem: CateringCustomItemState[];
+  cateringOrder: CateringItemsState[];
+  cateringCustomItem: CateringCustomItemState[];
 }) {
-    return (
-        <>
-            {cateringOrder.map((item) => (
-                <ItemCardSummary item={item} key={item._id} />
-            ))}
-            {cateringCustomItem.map((item, i) => (
-                <ItemCardSummary
-                    item={{
-                        name: item.name,
-                        size: item.size,
-                        priceAtOrder: item.priceAtOrder,
-                        quantity: 1,
-                    }}
-                    key={item.name + i}
-                />
-            ))}
-        </>
-    );
+  return (
+    <>
+      {cateringOrder.map((item) => (
+        <ItemCardSummary item={item} key={item._id} />
+      ))}
+      {cateringCustomItem.map((item) => (
+        <ItemCardSummary
+          item={{
+            name: item.name,
+            size: item.size,
+            priceAtOrder: item.priceAtOrder,
+            quantity: 1,
+          }}
+          key={item.name}
+        />
+      ))}
+    </>
+  );
 }

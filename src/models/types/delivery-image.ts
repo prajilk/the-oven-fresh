@@ -1,11 +1,11 @@
-import mongoose from "mongoose";
+import type mongoose from 'mongoose';
 
-export interface DeliveryImageDocument {
-    order: mongoose.Schema.Types.ObjectId;
-    store: mongoose.Schema.Types.ObjectId;
-    user: mongoose.Schema.Types.ObjectId;
-    deliveryDate: Date;
-    messageStatus: string;
-    image: string;
-    publicId: string;
-}
+export type DeliveryImageDocument = {
+  order: mongoose.Schema.Types.ObjectId;
+  store: mongoose.Schema.Types.ObjectId;
+  user: string;
+  deliveryDate: Date;
+  messageStatus: string;
+  image: string;
+  publicId: string;
+};

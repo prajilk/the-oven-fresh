@@ -1,53 +1,52 @@
-"use client";
+'use client';
 
-import { getYearsUpToCurrent } from "@/lib/utils";
+import { useDispatch, useSelector } from 'react-redux';
+import getQueryClient from '@/lib/query-utils/get-query-client';
+import { getYearsUpToCurrent } from '@/lib/utils';
+import type { RootState } from '@/store';
+import { setYear } from '@/store/slices/select-year-slice';
 import {
-    Select,
-    SelectContent,
-    SelectItem,
-    SelectTrigger,
-    SelectValue,
-} from "../ui/select";
-import { useSelector } from "react-redux";
-import { RootState } from "@/store";
-import { useDispatch } from "react-redux";
-import { setYear } from "@/store/slices/selectYearSlice";
-import getQueryClient from "@/lib/query-utils/get-query-client";
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from '../ui/select';
 
 const YearSelect = () => {
-    const yearFilter = useSelector((state: RootState) => state.selectYear);
-    const dispatch = useDispatch();
-    const queryClient = getQueryClient();
+  const yearFilter = useSelector((state: RootState) => state.selectYear);
+  const dispatch = useDispatch();
+  const queryClient = getQueryClient();
 
-    async function onValueChange(year: string) {
-        dispatch(setYear(year));
-        Promise.all([
-            queryClient.invalidateQueries({
-                queryKey: ["revenue"],
-            }),
-            queryClient.invalidateQueries({
-                queryKey: ["profit-details"],
-            }),
-            queryClient.invalidateQueries({
-                queryKey: ["expense"],
-            }),
-        ]);
-    }
+  async function onValueChange(year: string) {
+    dispatch(setYear(year));
+    await Promise.all([
+      queryClient.invalidateQueries({
+        queryKey: ['revenue'],
+      }),
+      queryClient.invalidateQueries({
+        queryKey: ['profit-details'],
+      }),
+      queryClient.invalidateQueries({
+        queryKey: ['expense'],
+      }),
+    ]);
+  }
 
-    return (
-        <Select value={yearFilter} onValueChange={onValueChange}>
-            <SelectTrigger className="w-[140px]">
-                <SelectValue placeholder="Year Filter" />
-            </SelectTrigger>
-            <SelectContent>
-                {getYearsUpToCurrent().map((year) => (
-                    <SelectItem key={year} value={year.toString()}>
-                        {year}
-                    </SelectItem>
-                ))}
-            </SelectContent>
-        </Select>
-    );
+  return (
+    <Select onValueChange={onValueChange} value={yearFilter}>
+      <SelectTrigger className="w-[140px]">
+        <SelectValue placeholder="Year Filter" />
+      </SelectTrigger>
+      <SelectContent>
+        {getYearsUpToCurrent().map((year) => (
+          <SelectItem key={year} value={year.toString()}>
+            {year}
+          </SelectItem>
+        ))}
+      </SelectContent>
+    </Select>
+  );
 };
 
 export default YearSelect;

@@ -1,31 +1,25 @@
-import ErrorComponent from "@/components/error";
-import { authOptions } from "@/lib/auth";
-import { getServerSession } from "next-auth";
-import { ReactNode } from "react";
+import type { ReactNode } from 'react';
+import ErrorComponent from '@/components/error';
+import { getCurrentUser } from '@/lib/auth';
 
 const StickerLayout = async ({ children }: { children: ReactNode }) => {
-    const session = await getServerSession(authOptions);
+  const user = await getCurrentUser();
 
-    if (
-        !session?.user.id ||
-        (!session?.user.storeId && session?.user.role !== "SUPERADMIN") ||
-        (session?.user.role !== "MANAGER" &&
-            session?.user.role !== "SUPERADMIN")
-    ) {
-        return (
-            <ErrorComponent
-                message="You are not authorized to access this page."
-                code={403}
-                title="Forbidden"
-            />
-        );
-    }
+  if (!user) {
     return (
-        <>
-            {/* Main content */}
-            {children}
-        </>
+      <ErrorComponent
+        code={403}
+        message="You are not authorized to access this page."
+        title="Forbidden"
+      />
     );
+  }
+  return (
+    <>
+      {/* Main content */}
+      {children}
+    </>
+  );
 };
 
 export default StickerLayout;

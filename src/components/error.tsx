@@ -1,72 +1,72 @@
-"use client";
+'use client';
 
-import { AlertCircle } from "lucide-react";
-import React from "react";
-import { Button } from "./ui/button";
-import Link from "next/link";
-import { signOut } from "next-auth/react";
+import { AlertCircle } from 'lucide-react';
+import Link from 'next/link';
+import { useRouter } from 'next/navigation';
+import { authClient } from '@/lib/auth-client';
+import { Button } from './ui/button';
 
 const ErrorComponent = ({
-    message,
-    code,
-    title,
+  message,
+  code,
+  title,
 }: {
-    message: string;
-    code?: number;
-    title?: string;
+  message: string;
+  code?: number;
+  title?: string;
 }) => {
-    function handleLogin() {
-        signOut();
-    }
+  const router = useRouter();
+  async function handleLogin() {
+    await authClient.signOut();
+    router.push('/');
+  }
 
-    return (
-        <main className="min-h-screen flex items-center justify-center p-4 bg-background">
-            <div className="max-w-md w-full text-center space-y-6">
-                <div className="space-y-2">
-                    <div className="inline-block p-4 bg-destructive/10 rounded-full">
-                        <AlertCircle
-                            className="w-12 h-12 text-destructive"
-                            aria-hidden="true"
-                        />
-                    </div>
-                    <h1 className="text-4xl font-bold tracking-tighter">
-                        {code || 500}
-                    </h1>
-                    <h2 className="text-2xl font-semibold text-muted-foreground">
-                        {title || "Something went wrong"}
-                    </h2>
-                </div>
+  return (
+    <main className="flex min-h-screen items-center justify-center bg-background p-4">
+      <div className="w-full max-w-md space-y-6 text-center">
+        <div className="space-y-2">
+          <div className="inline-block rounded-full bg-destructive/10 p-4">
+            <AlertCircle
+              aria-hidden="true"
+              className="h-12 w-12 text-destructive"
+            />
+          </div>
+          <h1 className="font-bold text-4xl tracking-tighter">{code || 500}</h1>
+          <h2 className="font-semibold text-2xl text-muted-foreground">
+            {title || 'Something went wrong'}
+          </h2>
+        </div>
 
-                <div className="space-y-4">
-                    <h1 className="font-bold">- {message} -</h1>
-                    <p className="text-muted-foreground">
-                        Oops! The server cannot process this request due to
-                        invalid syntax or missing parameters.
-                    </p>
+        <div className="space-y-4">
+          <h1 className="font-bold">- {message} -</h1>
+          <p className="text-muted-foreground">
+            Oops! The server cannot process this request due to invalid syntax
+            or missing parameters.
+          </p>
 
-                    <div className="space-y-2">
-                        <p className="text-sm text-muted-foreground">
-                            Here are some helpful links:
-                        </p>
-                        <div className="flex flex-col sm:flex-row gap-2 justify-center">
-                            <Button
-                                variant={"outline"}
-                                onClick={() => window.location.reload()}
-                            >
-                                Refresh
-                            </Button>
-                            <Button asChild>
-                                <Link href="/dashboard">Dashboard</Link>
-                            </Button>
-                        </div>
-                        <Button variant={"link"} onClick={handleLogin}>
-                            Log in
-                        </Button>
-                    </div>
-                </div>
+          <div className="space-y-2">
+            <p className="text-muted-foreground text-sm">
+              Here are some helpful links:
+            </p>
+            <div className="flex flex-col justify-center gap-2 sm:flex-row">
+              <Button
+                onClick={() => window.location.reload()}
+                variant={'outline'}
+              >
+                Refresh
+              </Button>
+              <Button asChild>
+                <Link href="/dashboard">Dashboard</Link>
+              </Button>
             </div>
-        </main>
-    );
+            <Button onClick={handleLogin} variant={'link'}>
+              Log in
+            </Button>
+          </div>
+        </div>
+      </div>
+    </main>
+  );
 };
 
 export default ErrorComponent;

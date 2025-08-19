@@ -1,6 +1,6 @@
-import { Session } from "next-auth";
-import { NextRequest } from "next/server";
+import type { NextRequest } from 'next/server';
+import type { auth } from '../auth';
 
 export interface AuthenticatedRequest extends NextRequest {
-    user?: Session["user"];
+  user?: (typeof auth.$Infer.Session)['user'];
 }

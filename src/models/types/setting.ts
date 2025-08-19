@@ -1,7 +1,7 @@
-import mongoose from "mongoose";
+import type mongoose from 'mongoose';
 
-export interface SettingsDocument {
-    _id: mongoose.Schema.Types.ObjectId;
-    store: mongoose.Schema.Types.ObjectId;
-    disable_sending_proof: boolean;
-}
+export type SettingsDocument = {
+  _id: mongoose.Schema.Types.ObjectId;
+  store: mongoose.Schema.Types.ObjectId;
+  disable_sending_proof: boolean;
+};

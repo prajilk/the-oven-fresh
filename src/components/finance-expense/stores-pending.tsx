@@ -1,28 +1,25 @@
-"use client";
+'use client';
 
-import RevenueStatCard from "./revenue-stat-card";
-import RevenueStatCardSkeleton from "../skeleton/revenue-stat-card-skeleton";
-import { useStoresPending } from "@/api-hooks/admin/get-stores-pending";
+import { useStoresPending } from '@/api-hooks/admin/get-stores-pending';
+import RevenueStatCardSkeleton from '../skeleton/revenue-stat-card-skeleton';
+import RevenueStatCard from './revenue-stat-card';
 
 const StoresPending = () => {
-    const { data, isPending } = useStoresPending();
-    if (isPending)
-        return (
-            <>
-                <RevenueStatCardSkeleton />
-            </>
-        );
-    return (
-        <>
-            {data?.map((store, i) => (
-                <RevenueStatCard
-                    title={`Pending - ${store.location}`}
-                    data={store.data}
-                    key={i}
-                />
-            ))}
-        </>
-    );
+  const { data, isPending } = useStoresPending();
+  if (isPending) {
+    return <RevenueStatCardSkeleton />;
+  }
+  return (
+    <>
+      {data?.map((store) => (
+        <RevenueStatCard
+          data={store.data}
+          key={store.location}
+          title={`Pending - ${store.location}`}
+        />
+      ))}
+    </>
+  );
 };
 
 export default StoresPending;

@@ -1,20 +1,20 @@
-"use client";
+'use client';
 
-import React from "react";
-import { useEventListener } from "./use-event-listener";
+import type React from 'react';
+import { useEventListener } from './use-event-listener';
 
 export function useClickOutside(
-    ref: React.RefObject<HTMLDivElement | null>,
-    handler: (e: Event) => void,
-    event = "mousedown"
+  ref: React.RefObject<HTMLDivElement | null>,
+  handler: (e: Event) => void,
+  event = 'mousedown'
 ) {
-    useEventListener(event, (event) => {
-        const el = ref?.current;
+  useEventListener(event, (e) => {
+    const el = ref?.current;
 
-        if (!el || el.contains(event.target as Node)) {
-            return;
-        }
+    if (!el || el.contains(e.target as Node)) {
+      return;
+    }
 
-        handler(event);
-    });
+    handler(e);
+  });
 }

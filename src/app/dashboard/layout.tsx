@@ -1,63 +1,54 @@
-import * as React from "react";
-import CssBaseline from "@mui/material/CssBaseline";
-import Box from "@mui/material/Box";
-import AppNavbar from "@/components/dashboard/app-navbar";
-import SideMenu from "@/components/dashboard/sidemenu";
-import MuiThemeProvider from "@/providers/mui-theme-provider";
-import { getServerSession } from "next-auth";
-import { authOptions } from "@/lib/auth";
-import connectDB from "@/lib/mongodb";
-import Store from "@/models/storeModel";
-import ErrorComponent from "@/components/error";
-import { Provider } from "@/providers/auth-provider";
+import Box from '@mui/material/Box';
+import CssBaseline from '@mui/material/CssBaseline';
+import type * as React from 'react';
+import AppNavbar from '@/components/dashboard/app-navbar';
+import SideMenu from '@/components/dashboard/sidemenu';
+import ErrorComponent from '@/components/error';
+import connectDB from '@/config/mongoose';
+import { getCurrentUser } from '@/lib/auth';
+import Store from '@/models/storeModel';
+import MuiThemeProvider from '@/providers/mui-theme-provider';
 
 export default async function DashboardLayout(
-    { children }: { children: React.ReactNode },
-    props: { disableCustomTheme?: boolean }
+  { children }: { children: React.ReactNode },
+  props: { disableCustomTheme?: boolean }
 ) {
-    const session = await getServerSession(authOptions);
+  const user = await getCurrentUser();
 
-    if (
-        !session?.user.id ||
-        (!session?.user.storeId && session?.user.role !== "SUPERADMIN") ||
-        (session?.user.role !== "MANAGER" &&
-            session?.user.role !== "SUPERADMIN")
-    ) {
-        return (
-            <ErrorComponent
-                message="You are not authorized to access this page."
-                code={403}
-                title="Forbidden"
-            />
-        );
-    }
-
-    await connectDB();
-    const allStores = await Store.find();
-    const store = allStores.find((store) => store.id === session.user.storeId);
-
+  if (!user || user.role === 'delivery') {
     return (
-        <MuiThemeProvider props={props}>
-            <Provider session={session}>
-                <CssBaseline enableColorScheme />
-                <Box sx={{ display: "flex" }}>
-                    <SideMenu />
-                    <AppNavbar
-                        role={session.user.role}
-                        username={session.user.username}
-                        active={{
-                            id: store._id.toString(),
-                            location: store.location,
-                        }}
-                        stores={allStores.map((store) => ({
-                            id: store._id.toString(),
-                            location: store.location,
-                        }))}
-                    />
-                    {/* Main content */}
-                    {children}
-                </Box>
-            </Provider>
-        </MuiThemeProvider>
+      <ErrorComponent
+        code={403}
+        message="You are not authorized to access this page."
+        title="Forbidden"
+      />
     );
+  }
+
+  await connectDB();
+  const allStores = await Store.find();
+  const store = allStores.find((store) => store.id === user.storeId.toString());
+
+  return (
+    <MuiThemeProvider props={props}>
+      <CssBaseline enableColorScheme />
+      <Box sx={{ display: 'flex' }}>
+        <SideMenu />
+        <AppNavbar
+          active={{
+            id: store._id.toString(),
+            location: store.location,
+          }}
+          role={user.role}
+          stores={allStores.map((store) => ({
+            id: store._id.toString(),
+            location: store.location,
+          }))}
+          username={user.username || ''}
+        />
+        {/* Main content */}
+        {children}
+      </Box>
+    </MuiThemeProvider>
+  );
 }

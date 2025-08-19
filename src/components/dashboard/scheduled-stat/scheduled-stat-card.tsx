@@ -1,103 +1,99 @@
-"use client";
+'use client';
 
-import { Card, CardContent, CardHeader, CardTitle } from "../../ui/card";
-import { ChevronRight } from "lucide-react";
-import { Separator } from "../../ui/separator";
-import { Button } from "../../ui/button";
-import Link from "next/link";
-import KitchenIcon from "@mui/icons-material/Kitchen";
-import TakeoutDiningIcon from "@mui/icons-material/TakeoutDiningRounded";
-import React from "react";
-import { useOrderStatsCount } from "@/api-hooks/order-stats-count";
-import ScheduledStatSkeleton from "@/components/skeleton/scheduled-stat-skeleton";
+import KitchenIcon from '@mui/icons-material/Kitchen';
+import TakeoutDiningIcon from '@mui/icons-material/TakeoutDiningRounded';
+import { ChevronRight } from 'lucide-react';
+import Link from 'next/link';
+import { useOrderStatsCount } from '@/api-hooks/order-stats-count';
+import ScheduledStatSkeleton from '@/components/skeleton/scheduled-stat-skeleton';
+import { Button } from '../../ui/button';
+import { Card, CardContent, CardHeader, CardTitle } from '../../ui/card';
+import { Separator } from '../../ui/separator';
 
 const ScheduledStatCard = () => {
-    const { data, isPending } = useOrderStatsCount();
+  const { data, isPending } = useOrderStatsCount();
 
-    if (isPending) return <ScheduledStatSkeleton />;
+  if (isPending) {
+    return <ScheduledStatSkeleton />;
+  }
 
-    return (
-        <Card className="w-full h-full bg-primary-foreground shadow-sm rounded-lg flex flex-col">
-            <CardHeader className="p-4 pt-2 flex-row items-center justify-between">
-                <CardTitle className="font-medium">
-                    Orders Scheduled for Today:
-                </CardTitle>
+  return (
+    <Card className="flex h-full w-full flex-col rounded-lg bg-primary-foreground shadow-sm">
+      <CardHeader className="flex-row items-center justify-between p-4 pt-2">
+        <CardTitle className="font-medium">
+          Orders Scheduled for Today:
+        </CardTitle>
 
-                <Link href={"/dashboard/scheduled"}>
-                    <Button size={"sm"} className="flex items-center">
-                        View all
-                        <ChevronRight size={15} />
-                    </Button>
-                </Link>
-            </CardHeader>
-            <CardContent className="p-5 pt-0 flex-1 flex items-center">
-                <div className="flex flex-col sm:flex-row items-start justify-evenly w-full">
-                    <div className="flex items-center space-x-2 w-full">
-                        <div className="p-2 bg-primary/10 rounded-full">
-                            <KitchenIcon className="size-5 text-primary" />
-                        </div>
-                        <div className="w-full space-y-0.5">
-                            <p className="font-medium text-lg">Tiffin Orders</p>
-                            <p className="leading-tight flex justify-between text-sm">
-                                Total:{" "}
-                                <span className="font-bold">
-                                    {data?.tiffinStatCounts.total}
-                                </span>
-                            </p>
-                            <p className="leading-tight flex justify-between text-sm">
-                                Delivered:{" "}
-                                <span className="font-bold">
-                                    {data?.tiffinStatCounts.delivered}
-                                </span>
-                            </p>
-                            <p className="leading-tight flex justify-between text-sm">
-                                Pending:{" "}
-                                <span className="font-bold">
-                                    {data?.tiffinStatCounts.pending}
-                                </span>
-                            </p>
-                        </div>
-                    </div>
-                    <Separator
-                        orientation="vertical"
-                        className="mx-4 h-12 hidden sm:block"
-                    />
-                    <Separator
-                        orientation="horizontal"
-                        className="my-4 sm:hidden"
-                    />
-                    <div className="flex items-center space-x-2 w-full">
-                        <div className="p-2 bg-primary/10 rounded-full">
-                            <TakeoutDiningIcon className="size-5 text-primary" />
-                        </div>
-                        <div className="w-full space-y-0.5">
-                            <p className="font-medium text-lg">
-                                Catering Orders
-                            </p>
-                            <p className="leading-tight flex justify-between text-sm">
-                                Total:{" "}
-                                <span className="font-bold">
-                                    {data?.cateringStatCounts.total}
-                                </span>
-                            </p>
-                            <p className="leading-tight flex justify-between text-sm">
-                                Delivered:{" "}
-                                <span className="font-bold">
-                                    {data?.cateringStatCounts.delivered}
-                                </span>
-                            </p>
-                            <p className="leading-tight flex justify-between text-sm">
-                                Pending:{" "}
-                                <span className="font-bold">
-                                    {data?.cateringStatCounts.pending}
-                                </span>
-                            </p>
-                        </div>
-                    </div>
-                </div>
-            </CardContent>
-        </Card>
-    );
+        <Link href={'/dashboard/scheduled'}>
+          <Button className="flex items-center" size={'sm'}>
+            View all
+            <ChevronRight size={15} />
+          </Button>
+        </Link>
+      </CardHeader>
+      <CardContent className="flex flex-1 items-center p-5 pt-0">
+        <div className="flex w-full flex-col items-start justify-evenly sm:flex-row">
+          <div className="flex w-full items-center space-x-2">
+            <div className="rounded-full bg-primary/10 p-2">
+              <KitchenIcon className="size-5 text-primary" />
+            </div>
+            <div className="w-full space-y-0.5">
+              <p className="font-medium text-lg">Tiffin Orders</p>
+              <p className="flex justify-between text-sm leading-tight">
+                Total:{' '}
+                <span className="font-bold">
+                  {data?.tiffinStatCounts.total}
+                </span>
+              </p>
+              <p className="flex justify-between text-sm leading-tight">
+                Delivered:{' '}
+                <span className="font-bold">
+                  {data?.tiffinStatCounts.delivered}
+                </span>
+              </p>
+              <p className="flex justify-between text-sm leading-tight">
+                Pending:{' '}
+                <span className="font-bold">
+                  {data?.tiffinStatCounts.pending}
+                </span>
+              </p>
+            </div>
+          </div>
+          <Separator
+            className="mx-4 hidden h-12 sm:block"
+            orientation="vertical"
+          />
+          <Separator className="my-4 sm:hidden" orientation="horizontal" />
+          <div className="flex w-full items-center space-x-2">
+            <div className="rounded-full bg-primary/10 p-2">
+              <TakeoutDiningIcon className="size-5 text-primary" />
+            </div>
+            <div className="w-full space-y-0.5">
+              <p className="font-medium text-lg">Catering Orders</p>
+              <p className="flex justify-between text-sm leading-tight">
+                Total:{' '}
+                <span className="font-bold">
+                  {data?.cateringStatCounts.total}
+                </span>
+              </p>
+              <p className="flex justify-between text-sm leading-tight">
+                Delivered:{' '}
+                <span className="font-bold">
+                  {data?.cateringStatCounts.delivered}
+                </span>
+              </p>
+              <p className="flex justify-between text-sm leading-tight">
+                Pending:{' '}
+                <span className="font-bold">
+                  {data?.cateringStatCounts.pending}
+                </span>
+              </p>
+            </div>
+          </div>
+        </div>
+      </CardContent>
+    </Card>
+  );
 };
 
 export default ScheduledStatCard;

@@ -1,4 +1,4 @@
-export interface CateringCategoryDocument {
-    _id: string;
-    name: string;
-}
+export type CateringCategoryDocument = {
+  _id: string;
+  name: string;
+};

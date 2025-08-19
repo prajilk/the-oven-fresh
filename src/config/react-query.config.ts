@@ -1,9 +1,9 @@
-import { DefaultOptions } from "@tanstack/react-query";
+import type { DefaultOptions } from '@tanstack/react-query';
 
 const queryConfig: DefaultOptions = {
-    queries: {
-        refetchOnWindowFocus: false,
-    },
+  queries: {
+    refetchOnWindowFocus: false,
+  },
 };
 
 export default queryConfig;

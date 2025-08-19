@@ -1,6 +1,6 @@
-import axios from "axios";
+import axios from 'axios';
 
 export default axios.create({
-    baseURL: process.env.URL,
-    withCredentials: true,
+  baseURL: process.env.URL,
+  withCredentials: true,
 });

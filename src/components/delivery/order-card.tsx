@@ -1,190 +1,174 @@
-import { Card, CardContent, CardFooter, CardHeader } from "../ui/card";
-import { BadgeCheck, Camera, Check, MapPin, Phone } from "lucide-react";
-import { Button } from "../ui/button";
-import { format } from "date-fns";
-import Link from "next/link";
-import { useState } from "react";
-import { Chip } from "@heroui/chip";
-import { ConfirmDeliveryDrawer } from "../drawer/delivery/confirm-delivery-drawer";
-import { Show } from "../show";
-import Upload from "../upload/upload";
-import { Badge } from "../ui/badge";
-import { Separator } from "../ui/separator";
-import { Avatar, AvatarFallback } from "../ui/avatar";
-import OrderItemsDrawer from "../drawer/delivery/order-items-drawer";
-import {
-    ScheduledCateringDelivery,
-    ScheduledTiffinDelivery,
-} from "@/lib/types/scheduled-order";
-import { CloudinaryUploadWidgetInfo } from "next-cloudinary";
+import { Chip } from '@heroui/chip';
+import { format } from 'date-fns';
+import { BadgeCheck, Camera, Check, MapPin, Phone } from 'lucide-react';
+import Link from 'next/link';
+import type { CloudinaryUploadWidgetInfo } from 'next-cloudinary';
+import { useState } from 'react';
+import type {
+  ScheduledCateringDelivery,
+  ScheduledTiffinDelivery,
+} from '@/lib/types/scheduled-order';
+import { ConfirmDeliveryDrawer } from '../drawer/delivery/confirm-delivery-drawer';
+import OrderItemsDrawer from '../drawer/delivery/order-items-drawer';
+import { Show } from '../show';
+import { Avatar, AvatarFallback } from '../ui/avatar';
+import { Badge } from '../ui/badge';
+import { Button } from '../ui/button';
+import { Card, CardContent, CardFooter, CardHeader } from '../ui/card';
+import { Separator } from '../ui/separator';
+import Upload from '../upload/upload';
 
 const OrderCard = ({
-    order,
-    orderType,
+  order,
+  orderType,
 }: {
-    order:
-        | ScheduledTiffinDelivery["orders"][0]
-        | ScheduledCateringDelivery["orders"][0];
-    orderType: "tiffins" | "caterings";
+  order:
+    | ScheduledTiffinDelivery['orders'][0]
+    | ScheduledCateringDelivery['orders'][0];
+  orderType: 'tiffins' | 'caterings';
 }) => {
-    const [resource, setResource] = useState<
-        string | CloudinaryUploadWidgetInfo | undefined
-    >();
+  const [resource, setResource] = useState<
+    string | CloudinaryUploadWidgetInfo | undefined
+  >();
 
-    return (
-        <Card className="w-full max-w-md mx-auto" key={order._id}>
-            <CardHeader className="pb-2 px-3 pt-3">
-                <div className="flex justify-between items-center">
-                    <p className="font-semibold text-lg">{order.orderId}</p>
-                    <Badge
-                        variant={
-                            order.status === "DELIVERED"
-                                ? "outline"
-                                : "secondary"
-                        }
-                        className="ml-auto"
+  return (
+    <Card className="mx-auto w-full max-w-md" key={order._id}>
+      <CardHeader className="px-3 pt-3 pb-2">
+        <div className="flex items-center justify-between">
+          <p className="font-semibold text-lg">{order.orderId}</p>
+          <Badge
+            className="ml-auto"
+            variant={order.status === 'DELIVERED' ? 'outline' : 'secondary'}
+          >
+            {order.status === 'DELIVERED' ? 'Delivered' : 'Pending'}
+          </Badge>
+        </div>
+      </CardHeader>
+      <CardContent className="space-y-4 px-3 pb-2">
+        <div className="flex items-center gap-3">
+          <Avatar className="h-10 w-10 border">
+            <AvatarFallback>{order.customerName[0]}</AvatarFallback>
+          </Avatar>
+          <div>
+            <p className="font-medium">{order.customerName}</p>
+            <p className="text-muted-foreground text-sm">
+              {format(new Date(order.date), 'PPP')}
+            </p>
+          </div>
+          <Show>
+            <Show.When isTrue={orderType === 'caterings'}>
+              <OrderItemsDrawer
+                customItems={
+                  (order as unknown as ScheduledCateringDelivery['orders'][0])
+                    .customItems || []
+                }
+                items={
+                  (order as unknown as ScheduledCateringDelivery['orders'][0])
+                    .items || []
+                }
+                orderId={order.orderId}
+              />
+            </Show.When>
+          </Show>
+        </div>
+
+        <div className="flex items-start gap-2">
+          <MapPin className="mt-1 h-4 w-4 shrink-0 text-muted-foreground" />
+          <p className="text-sm">{order.address.address}</p>
+        </div>
+
+        <Separator />
+
+        <div className="flex items-center justify-between">
+          <div>
+            <p className="text-muted-foreground text-sm">Payment Status</p>
+            <p className="font-medium">
+              {order.fullyPaid ? 'Paid' : `Collect $${order.pendingBalance}`}
+            </p>
+          </div>
+          <Show>
+            <Show.When
+              isTrue={order.status !== 'DELIVERED' && orderType === 'tiffins'}
+            >
+              <div className="flex gap-2">
+                <Button
+                  className={`rounded-full ${
+                    resource !== undefined
+                      ? 'border-green-200 bg-green-100 text-green-600 hover:bg-green-100 hover:text-green-600'
+                      : ''
+                  }`}
+                  size="icon"
+                  variant="outline"
+                >
+                  {resource !== undefined ? (
+                    <Check className="h-4 w-4" />
+                  ) : (
+                    <Upload
+                      extraOptions={{
+                        cropping: true,
+                        multiple: false,
+                        showSkipCropButton: false,
+                        croppingAspectRatio: 1.5,
+                      }}
+                      folder={`${orderType}/${order.orderId}`}
+                      setResource={setResource}
+                      sources={['camera']}
                     >
-                        {order.status === "DELIVERED" ? "Delivered" : "Pending"}
-                    </Badge>
-                </div>
-            </CardHeader>
-            <CardContent className="pb-2 px-3 space-y-4">
-                <div className="flex items-center gap-3">
-                    <Avatar className="h-10 w-10 border">
-                        <AvatarFallback>{order.customerName[0]}</AvatarFallback>
-                    </Avatar>
-                    <div>
-                        <p className="font-medium">{order.customerName}</p>
-                        <p className="text-sm text-muted-foreground">
-                            {format(new Date(order.date), "PPP")}
-                        </p>
-                    </div>
-                    <Show>
-                        <Show.When isTrue={orderType === "caterings"}>
-                            <OrderItemsDrawer
-                                items={
-                                    (
-                                        order as unknown as ScheduledCateringDelivery["orders"][0]
-                                    ).items || []
-                                }
-                                customItems={
-                                    (
-                                        order as unknown as ScheduledCateringDelivery["orders"][0]
-                                    ).customItems || []
-                                }
-                                orderId={order.orderId}
-                            />
-                        </Show.When>
-                    </Show>
-                </div>
-
-                <div className="flex items-start gap-2">
-                    <MapPin className="h-4 w-4 text-muted-foreground shrink-0 mt-1" />
-                    <p className="text-sm">{order.address.address}</p>
-                </div>
-
-                <Separator />
-
-                <div className="flex justify-between items-center">
-                    <div>
-                        <p className="text-sm text-muted-foreground">
-                            Payment Status
-                        </p>
-                        <p className="font-medium">
-                            {order.fullyPaid
-                                ? "Paid"
-                                : `Collect $${order.pendingBalance}`}
-                        </p>
-                    </div>
-                    <Show>
-                        <Show.When
-                            isTrue={
-                                order.status !== "DELIVERED" &&
-                                orderType === "tiffins"
-                            }
-                        >
-                            <div className="flex gap-2">
-                                <Button
-                                    variant="outline"
-                                    size="icon"
-                                    className={`rounded-full ${
-                                        resource !== undefined
-                                            ? "bg-green-100 text-green-600 border-green-200 hover:bg-green-100 hover:text-green-600"
-                                            : ""
-                                    }`}
-                                >
-                                    {resource !== undefined ? (
-                                        <Check className="h-4 w-4" />
-                                    ) : (
-                                        <Upload
-                                            folder={`${orderType}/${order.orderId}`}
-                                            setResource={setResource}
-                                            sources={["camera"]}
-                                            extraOptions={{
-                                                cropping: true,
-                                                multiple: false,
-                                                showSkipCropButton: false,
-                                                croppingAspectRatio: 1.5,
-                                            }}
-                                        >
-                                            <Camera className="h-4 w-4" />
-                                        </Upload>
-                                    )}
-                                </Button>
-                            </div>
-                        </Show.When>
-                    </Show>
-                </div>
-            </CardContent>
-            <CardFooter className="flex gap-2 pt-0 px-3">
-                <Show>
-                    <Show.When isTrue={order.status === "DELIVERED"}>
-                        <Chip
-                            variant="light"
-                            color="success"
-                            classNames={{
-                                content: "flex items-center gap-1",
-                            }}
-                            size="lg"
-                            className="flex-1 max-w-full"
-                        >
-                            <BadgeCheck className="h-4 w-4 mr-1" />
-                            Delivered
-                        </Chip>
-                    </Show.When>
-                    <Show.Else>
-                        <ConfirmDeliveryDrawer
-                            orderId={order._id}
-                            orderType={orderType}
-                            pendingBalance={order.pendingBalance}
-                            disabled={
-                                orderType === "tiffins" ? !resource : false
-                            }
-                            statusId={
-                                (
-                                    order as unknown as ScheduledTiffinDelivery["orders"][0]
-                                ).statusId
-                            }
-                            resource={resource}
-                        />
-                    </Show.Else>
-                </Show>
-                <Button variant="outline" size="icon" asChild>
-                    <Link href={`tel:${order.customerPhone}`} target="_blank">
-                        <Phone className="h-4 w-4" />
-                    </Link>
+                      <Camera className="h-4 w-4" />
+                    </Upload>
+                  )}
                 </Button>
-                <Button variant="outline" size="icon" asChild>
-                    <Link
-                        href={`https://www.google.com/maps/dir/?api=1&destination=${order.address.lat},${order.address.lng}`}
-                        target="_blank"
-                    >
-                        <MapPin className="h-4 w-4" />
-                    </Link>
-                </Button>
-            </CardFooter>
-        </Card>
-    );
+              </div>
+            </Show.When>
+          </Show>
+        </div>
+      </CardContent>
+      <CardFooter className="flex gap-2 px-3 pt-0">
+        <Show>
+          <Show.When isTrue={order.status === 'DELIVERED'}>
+            <Chip
+              className="max-w-full flex-1"
+              classNames={{
+                content: 'flex items-center gap-1',
+              }}
+              color="success"
+              size="lg"
+              variant="light"
+            >
+              <BadgeCheck className="mr-1 h-4 w-4" />
+              Delivered
+            </Chip>
+          </Show.When>
+          <Show.Else>
+            <ConfirmDeliveryDrawer
+              disabled={orderType === 'tiffins' ? !resource : false}
+              orderId={order._id}
+              orderType={orderType}
+              pendingBalance={order.pendingBalance}
+              resource={resource}
+              statusId={
+                (order as unknown as ScheduledTiffinDelivery['orders'][0])
+                  .statusId
+              }
+            />
+          </Show.Else>
+        </Show>
+        <Button asChild size="icon" variant="outline">
+          <Link href={`tel:${order.customerPhone}`} target="_blank">
+            <Phone className="h-4 w-4" />
+          </Link>
+        </Button>
+        <Button asChild size="icon" variant="outline">
+          <Link
+            href={`https://www.google.com/maps/dir/?api=1&destination=${order.address.lat},${order.address.lng}`}
+            target="_blank"
+          >
+            <MapPin className="h-4 w-4" />
+          </Link>
+        </Button>
+      </CardFooter>
+    </Card>
+  );
 };
 
 export default OrderCard;
