@@ -1,4 +1,5 @@
 import EditPaymentDialog from '../dialog/edit-payment-dialog';
+import { Show } from '../show';
 import { Badge } from '../ui/badge';
 import { Card, CardContent, CardHeader, CardTitle } from '../ui/card';
 import { Separator } from '../ui/separator';
@@ -89,7 +90,15 @@ const PaymentCard = ({
             <div className="flex justify-between text-sm">
               <span>Payment Status</span>
               <Badge variant={fullyPaid ? 'default' : 'secondary'}>
-                {fullyPaid ? 'Paid' : 'Partially Paid'}
+                <Show>
+                  <Show.When isTrue={fullyPaid}>Fully Paid</Show.When>
+                  <Show.Else>
+                    <Show.When isTrue={pendingBalance >= 0}>
+                      Partially Paid
+                    </Show.When>
+                    <Show.Else>Paid</Show.Else>
+                  </Show.Else>
+                </Show>
               </Badge>
             </div>
           </div>
