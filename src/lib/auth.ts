@@ -62,10 +62,16 @@ export const auth = betterAuth({
           const u = user as typeof user & {
             storeId: string;
           };
+          let store: string | mongoose.Types.ObjectId;
+          if (typeof u.storeId === 'string') {
+            store = mongoose.Types.ObjectId.createFromHexString(u.storeId);
+          } else {
+            store = u.storeId;
+          }
           return {
             data: {
               ...u,
-              storeId: mongoose.Types.ObjectId.createFromHexString(u.storeId),
+              storeId: store,
             },
           };
         },
@@ -76,10 +82,16 @@ export const auth = betterAuth({
           const u = user as typeof user & {
             storeId: string;
           };
+          let store: string | mongoose.Types.ObjectId;
+          if (typeof u.storeId === 'string') {
+            store = mongoose.Types.ObjectId.createFromHexString(u.storeId);
+          } else {
+            store = u.storeId;
+          }
           return {
             data: {
               ...u,
-              storeId: mongoose.Types.ObjectId.createFromHexString(u.storeId),
+              storeId: store,
             },
           };
         },

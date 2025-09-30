@@ -33,6 +33,7 @@ const EditStaffDialog = ({
   function handleSubmit(formData: FormData) {
     setLoading(true);
 
+    formData.set('id', staff._id);
     const data = Object.fromEntries(formData);
 
     const result = ZodUserSchemaWithPassword.safeParse(data);
@@ -42,8 +43,6 @@ const EditStaffDialog = ({
       setLoading(false);
       return;
     }
-
-    formData.set('id', staff._id);
 
     const promise = async () => {
       const result = await editStaffAction(formData);
