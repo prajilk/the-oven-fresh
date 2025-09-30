@@ -105,6 +105,8 @@ async function postHandler(req: AuthenticatedRequest) {
       orderId: generateOrderId(),
       deliveryDate: formatDate(new Date(orderData.deliveryDate), 'yyyy-MM-dd'),
       pendingBalance: Number(orderData.pendingBalance)?.toFixed(2),
+      totalPrice: Number(orderData.totalPrice)?.toFixed(2),
+      tax: Number(orderData.tax)?.toFixed(2),
       customer: customer._id,
       customerName: `${customer.firstName} ${customer.lastName}`,
       customerPhone: customer.phone,

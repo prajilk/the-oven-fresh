@@ -18,18 +18,20 @@ const RevenueStatCard = ({
         <CardTitle className="font-medium text-sm">{title}</CardTitle>
       </CardHeader>
       <CardContent className="space-y-2">
-        <div className="font-bold text-2xl">${data?.total || 0}</div>
+        <div className="font-bold text-2xl">${data?.total.toFixed(2) || 0}</div>
         <Separator />
         <div className="flex items-center justify-between gap-2">
           <div className="flex flex-col gap-1">
             <span className="text-xs">Tiffin</span>
-            <span className="font-semibold text-xs">${data?.tiffin || 0}</span>
+            <span className="font-semibold text-xs">
+              ${data?.tiffin.toFixed(2) || 0}
+            </span>
           </div>
           <div className="h-10 w-px bg-muted-foreground/30" />
           <div className="flex flex-col gap-1">
             <span className="text-xs">Catering</span>
             <span className="font-semibold text-xs">
-              ${data?.catering || 0}
+              ${data?.catering.toFixed(2) || 0}
             </span>
           </div>
         </div>
