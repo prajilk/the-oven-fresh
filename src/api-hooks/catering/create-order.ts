@@ -33,7 +33,7 @@ export function useCreateCateringOrder(
       onSuccess(queryClient);
       if (result.messageSent === false) {
         toast.error('Error sending whatsapp message.');
-      } else {
+      } else if(result.messageSent === true) {
         toast.success('Order details sent to customer.');
       }
     },
@@ -41,7 +41,7 @@ export function useCreateCateringOrder(
       if (error.response.status === 403) {
         toast.error(error.response.data.message || 'Error in creating order!');
       } else {
-        toast.error('Error in creating order!');
+        toast.error(error instanceof Error ? error.response.data.message : 'Error in creating order!');
       }
     },
   });

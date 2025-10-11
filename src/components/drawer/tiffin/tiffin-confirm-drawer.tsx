@@ -90,7 +90,9 @@ export function TiffinConfirmDrawer({
     return (
       <Dialog onOpenChange={setOpen} open={open}>
         <DialogTrigger asChild>
-          <Button disabled={!form.formState.isValid}>Submit</Button>
+          <Button 
+          disabled={!form.formState.isValid}
+          >Submit</Button>
         </DialogTrigger>
         <DialogContent className="z-[1550] flex max-h-[90%] max-w-xl flex-col">
           <DialogHeader>
@@ -268,7 +270,7 @@ function ConfirmOrderButton({
   return (
     <LoadingButton
       disabled={
-        advanceAmount === '' || !form.formState.isValid || mutation.isPending
+        !form.formState.isValid || mutation.isPending
       }
       form="tiffin-form"
       isLoading={mutation.isPending}

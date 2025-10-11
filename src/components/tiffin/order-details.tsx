@@ -243,6 +243,7 @@ export default function TiffinOrderDetails({
 
         <AddressCard
           address={orderData.address}
+          customerId={orderData.customer._id.toString()}
           endDate={orderData.endDate}
           numberOfWeeks={orderData.numberOfWeeks}
           orderId={orderData._id.toString()}

@@ -287,7 +287,7 @@ export default function CateringOrderTable({
         orderId: order.orderId,
         customerName: order.customerName,
         phone: order.customerPhone,
-        address: order.address.address,
+        address: order.address?.address,
         deliveryDate: format(new Date(order.deliveryDate), 'PPP'),
         orderType: order.order_type,
         items: order.items.map((item) => item.itemId.name),

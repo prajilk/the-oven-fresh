@@ -55,6 +55,10 @@ async function postHandler(req: AuthenticatedRequest) {
         note,
       } = result.data;
 
+      if (!data.googleAddress.placeId && order_type === 'delivery') {
+        return error400('Address is required for delivery orders', {});
+      }
+
       const placeData: {
         lat: number;
         lng: number;
@@ -67,18 +71,20 @@ async function postHandler(req: AuthenticatedRequest) {
         lng: customerDetails.lng,
       };
 
-      // Get lat and lng of the address
-      if (!(placeData.lat && placeData.lng)) {
-        const place = await getPlaceDetails(data.googleAddress.placeId);
-        if (!place) {
-          return error400('Unable to get coordinates.', {});
+      if(data.googleAddress.placeId) {
+        // Get lat and lng of the address
+        if (!(placeData.lat && placeData.lng)) {
+          const place = await getPlaceDetails(data.googleAddress.placeId);
+          if (!place) {
+            return error400('Unable to get coordinates.', {});
+          }
+          placeData.lat = place.lat;
+          placeData.lng = place.lng;
+          placeData.street = place.street;
+          placeData.city = place.city;
+          placeData.province = place.province;
+          placeData.zipCode = place.zipCode;
         }
-        placeData.lat = place.lat;
-        placeData.lng = place.lng;
-        placeData.street = place.street;
-        placeData.city = place.city;
-        placeData.province = place.province;
-        placeData.zipCode = place.zipCode;
       }
 
       // 1️⃣ Find or Create Customer (Atomic)
@@ -91,24 +97,27 @@ async function postHandler(req: AuthenticatedRequest) {
         { new: true, upsert: true, setDefaultsOnInsert: true }
       );
 
-      // 2️⃣ Find or Create Address (Atomic)
-      const customerAddress = await Address.findOneAndUpdate(
-        {
-          customerId: customer._id,
-          address: data.googleAddress.address.trim(),
-          placeId: data.googleAddress.placeId,
-        }, // Match customer and address
-        {
-          lat: placeData.lat,
-          lng: placeData.lng,
-          street: placeData.street,
-          city: placeData.city,
-          province: placeData.province,
-          zipCode: placeData.zipCode,
-          aptSuiteUnit: customerDetails.aptSuiteUnit,
-        },
-        { new: true, upsert: true, setDefaultsOnInsert: true }
-      );
+      let customerAddress;
+      if(data.googleAddress.address && data.googleAddress.placeId) {
+        // 2️⃣ Find or Create Address (Atomic)
+        customerAddress = await Address.findOneAndUpdate(
+          {
+            customerId: customer._id,
+            address: data.googleAddress.address.trim(),
+            placeId: data.googleAddress.placeId,
+          }, // Match customer and address
+          {
+            lat: placeData.lat,
+            lng: placeData.lng,
+            street: placeData.street,
+            city: placeData.city,
+            province: placeData.province,
+            zipCode: placeData.zipCode,
+            aptSuiteUnit: customerDetails.aptSuiteUnit,
+          },
+          { new: true, upsert: true, setDefaultsOnInsert: true }
+        );
+      }
 
       // Generate a new ObjectId for the address
       const tiffinId = new mongoose.Types.ObjectId();
@@ -133,7 +142,7 @@ async function postHandler(req: AuthenticatedRequest) {
           customer: customer._id,
           customerName: `${customer.firstName} ${customer.lastName}`,
           customerPhone: customer.phone,
-          address: customerAddress._id,
+          address: customerAddress ? customerAddress._id : null,
         }),
         // 4️⃣ Create Order Status
         await createOrderStatus(

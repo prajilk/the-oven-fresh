@@ -1,4 +1,3 @@
-import { formatDate } from 'date-fns';
 import { getPlaceDetails } from '@/lib/google';
 import {
   error400,
@@ -36,12 +35,20 @@ async function postHandler(req: AuthenticatedRequest) {
       return error400('Invalid data format.', {});
     }
 
-    const result = ZodCateringSchema.safeParse(data);
+    const result = ZodCateringSchema.safeParse({
+      ...data,
+      deliveryDate: new Date(data.deliveryDate),
+    });
+
     if (!result.success) {
       return error400('Invalid data format.', {});
     }
 
     const { customerDetails, ...orderData } = result.data;
+
+    if (!data.customerDetails.address && orderData.order_type === 'delivery') {
+      return error400('Address is required for delivery orders', {});
+    }
 
     const placeData: {
       lat: number;
@@ -55,8 +62,12 @@ async function postHandler(req: AuthenticatedRequest) {
       lng: customerDetails.lng,
     };
 
-    // Get lat and lng of the address
-    if (!(placeData.lat && placeData.lng)) {
+    if (
+      data.customerDetails.placeId &&
+      customerDetails.address &&
+      !(placeData.lat && placeData.lng)
+    ) {
+      // Get lat and lng of the address
       const place = await getPlaceDetails(data.customerDetails.placeId);
       if (!place) {
         return error400('Unable to get coordinates.', {});
@@ -79,38 +90,43 @@ async function postHandler(req: AuthenticatedRequest) {
       { new: true, upsert: true, setDefaultsOnInsert: true }
     );
 
-    // 2️⃣ Find or Create Address (Atomic)
-    const customerAddress = await Address.findOneAndUpdate(
-      {
-        customerId: customer._id,
-        address: customerDetails.address.trim(),
-        placeId: data.customerDetails.placeId,
-        aptSuiteUnit: customerDetails.aptSuiteUnit,
-      }, // Match customer and address
-      {
-        lat: placeData.lat,
-        lng: placeData.lng,
-        street: placeData.street,
-        city: placeData.city,
-        province: placeData.province,
-        zipCode: placeData.zipCode,
-        aptSuiteUnit: customerDetails.aptSuiteUnit,
-      },
-      { new: true, upsert: true, setDefaultsOnInsert: true }
-    );
+    let customerAddress: unknown;
+    if (customerDetails.address && data.customerDetails.placeId) {
+      // 2️⃣ Find or Create Address (Atomic)
+      customerAddress = await Address.findOneAndUpdate(
+        {
+          customerId: customer._id,
+          address: customerDetails.address.trim(),
+          placeId: data.customerDetails.placeId,
+          aptSuiteUnit: customerDetails.aptSuiteUnit,
+        }, // Match customer and address
+        {
+          lat: placeData.lat,
+          lng: placeData.lng,
+          street: placeData.street,
+          city: placeData.city,
+          province: placeData.province,
+          zipCode: placeData.zipCode,
+          aptSuiteUnit: customerDetails.aptSuiteUnit,
+        },
+        { new: true, upsert: true, setDefaultsOnInsert: true }
+      );
+    }
 
     const order = await Catering.create({
       ...orderData,
       store,
       orderId: generateOrderId(),
-      deliveryDate: formatDate(new Date(orderData.deliveryDate), 'yyyy-MM-dd'),
+      deliveryDate: orderData.deliveryDate,
       pendingBalance: Number(orderData.pendingBalance)?.toFixed(2),
       totalPrice: Number(orderData.totalPrice)?.toFixed(2),
       tax: Number(orderData.tax)?.toFixed(2),
       customer: customer._id,
       customerName: `${customer.firstName} ${customer.lastName}`,
       customerPhone: customer.phone,
-      address: customerAddress._id,
+      address: customerAddress
+        ? (customerAddress as { _id: string })._id
+        : null,
       paymentMethod: orderData.payment_method,
     });
 

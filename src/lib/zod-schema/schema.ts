@@ -43,7 +43,10 @@ export const ZodCustomerSchema = z.object({
   firstName: z.string().min(3).max(20),
   lastName: z.string().min(1).max(20),
   phone: z.string().min(3).max(20),
-  address: z.string().min(3).max(200),
+  address: z.union([
+    z.literal(""), // allow empty string
+    z.string().min(3).max(200), // if not empty, must be 3–200 chars
+  ]).optional(),
   aptSuiteUnit: z.string().optional(),
   lat: z.number().min(-90).max(90), // Latitude must be between -90 and 90
   lng: z.number().min(-180).max(180), // Longitude must be between -180 and 180

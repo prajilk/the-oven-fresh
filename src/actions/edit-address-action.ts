@@ -27,6 +27,7 @@ type ValidatedDataType = {
   order_type: 'pickup' | 'delivery';
 };
 
+// biome-ignore lint/complexity/noExcessiveCognitiveComplexity: <Ignore>
 export async function editAddressAction(formData: FormData) {
   try {
     // Authorize the user
@@ -50,23 +51,30 @@ export async function editAddressAction(formData: FormData) {
       return { error: 'Invalid order ID or order type.' };
     }
 
-    // Fetch existing address from the database
-    const currentAddress = await Address.findById(addressId);
-
-    if (!currentAddress) {
-      return { error: 'Address not found.' };
+    if (!address) {
+      if (orderType === 'tiffin') {
+        const tiffin = await Tiffin.findOne({ _id: orderId }, 'order_type');
+        if (tiffin?.order_type === 'delivery' || order_type === 'delivery') {
+          return { error: 'Address is required for delivery orders' };
+        }
+      } else if (orderType === 'catering') {
+        const catering = await Catering.findOne({ _id: orderId }, 'order_type');
+        if (catering?.order_type === 'delivery' || order_type === 'delivery') {
+          return { error: 'Address is required for delivery orders' };
+        }
+      }
     }
 
     // Validate input data based on order type
     const validationSchema =
       orderType === 'catering'
-        ? ZodCustomerSchema.merge(ZodCateringSchema).pick({
+        ? ZodCustomerSchema.extend(ZodCateringSchema.shape).pick({
             address: true,
             aptSuiteUnit: true,
             deliveryDate: true,
             order_type: true,
           })
-        : ZodCustomerSchema.merge(ZodTiffinSchema).pick({
+        : ZodCustomerSchema.extend(ZodTiffinSchema.shape).pick({
             address: true,
             aptSuiteUnit: true,
             start_date: true,
@@ -75,74 +83,104 @@ export async function editAddressAction(formData: FormData) {
 
     const validated = validationSchema.safeParse({
       address,
-      deliveryDate,
-      aptSuiteUnit,
+      deliveryDate: new Date(deliveryDate as string),
+      aptSuiteUnit: aptSuiteUnit || '',
       start_date: startDate,
       end_date: endDate,
       order_type,
     });
 
     if (!validated.success) {
-      return { error: validated.error.format() };
+      return { error: validated.error.message };
     }
 
-    const validatedData = validated.data as ValidatedDataType;
+    const validatedData = validated.data as unknown as ValidatedDataType;
 
-    // Check if address details have changed
-    const isAddressSame =
-      currentAddress.address === validatedData.address &&
-      currentAddress.aptSuiteUnit === validatedData.aptSuiteUnit;
+    let isAddressSame = true;
+    if (addressId) {
+      const currentAddress = await Address.findById(addressId);
+      if (!currentAddress) {
+        return { error: 'Address not found.' };
+      }
 
+      isAddressSame =
+        currentAddress.address === validatedData.address &&
+        currentAddress.aptSuiteUnit === validatedData.aptSuiteUnit;
+    } else if (placeId && validatedData.address) {
+      isAddressSame = false;
+    }
+
+    const isAddressInUse = async (id: string) => {
+      const [catering, tiffin] = await Promise.all([
+        Catering.findOne({ address: id, _id: { $ne: orderId } }),
+        Tiffin.findOne({ address: id, _id: { $ne: orderId } }),
+      ]);
+      return Boolean(catering || tiffin);
+    };
+
+    const createAddress = async () => {
+      const places = await getPlaceDetails(placeId.toString());
+      const newAddress = await Address.create({
+        address: validatedData.address,
+        lat: places?.lat,
+        lng: places?.lng,
+        street: places?.street,
+        city: places?.city,
+        province: places?.province,
+        zipCode: places?.zipCode,
+        aptSuiteUnit: validatedData.aptSuiteUnit,
+        placeId,
+        customerId,
+      });
+      return newAddress._id;
+    };
+
+    const updateAddress = async (id: string) => {
+      const places = await getPlaceDetails(placeId.toString());
+      await Address.updateOne(
+        { _id: id },
+        {
+          $set: {
+            address: validatedData.address,
+            aptSuiteUnit: validatedData.aptSuiteUnit,
+            lat: places?.lat,
+            lng: places?.lng,
+            street: places?.street,
+            city: places?.city,
+            province: places?.province,
+            zipCode: places?.zipCode,
+          },
+        }
+      );
+    };
+
+    // biome-ignore lint/nursery/noUnnecessaryConditions: <Ignore>
     if (isAddressSame) {
       // Only update order details if the address is unchanged
       await updateOrder(orderId.toString(), orderType.toString(), {
         ...validatedData,
-        addressId: addressId as string,
+        addressId: (addressId as string) || null,
       });
     } else {
-      // Check if the address is shared with other orders
-      const isAddressInUse = await Promise.all([
-        Catering.findOne({ address: addressId, _id: { $ne: orderId } }),
-        Tiffin.findOne({ address: addressId, _id: { $ne: orderId } }),
-      ]);
-
-      const places = await getPlaceDetails(placeId.toString());
-
-      let newAddressId = addressId as string;
-
-      if (isAddressInUse.some((order) => order)) {
-        // Create a new address if it's used by another order
-        const newAddress = await Address.create({
-          address: validatedData.address,
-          lat: places?.lat,
-          lng: places?.lng,
-          street: places?.street,
-          city: places?.city,
-          province: places?.province,
-          zipCode: places?.zipCode,
-          aptSuiteUnit: validatedData.aptSuiteUnit,
-          placeId,
-          customerId,
-        });
-
-        newAddressId = newAddress._id;
-      } else {
-        // Update existing address
-        await Address.updateOne(
-          { _id: addressId },
-          {
-            $set: {
-              address: validatedData.address,
-              aptSuiteUnit: validatedData.aptSuiteUnit,
-              lat: places?.lat,
-              lng: places?.lng,
-              street: places?.street,
-              city: places?.city,
-              province: places?.province,
-              zipCode: places?.zipCode,
-            },
-          }
-        );
+      let newAddressId: string | null = addressId as string;
+      if (addressId && placeId && address) {
+        // Check if the address is shared with other orders
+        if (await isAddressInUse(addressId as string)) {
+          // Create a new address if it's used by another order
+          newAddressId = await createAddress(); // Create new one if shared
+        } else {
+          // Update existing address
+          await updateAddress(addressId as string);
+        }
+      } else if (!addressId && placeId && validatedData.address) {
+        // Create new address
+        newAddressId = await createAddress();
+      } else if (addressId && placeId && (!address || address === '')) {
+        if (!(await isAddressInUse(addressId as string))) {
+          // Address cleared, remove if unused
+          await Address.deleteOne({ _id: addressId });
+        }
+        newAddressId = null;
       }
 
       // Update order with the new address
@@ -168,9 +206,9 @@ export async function editAddressAction(formData: FormData) {
 
 // Define the type for updateData
 type UpdateDataType = {
-  address?: string;
+  address?: string | null;
   order_type?: string;
-  deliveryDate?: string;
+  deliveryDate?: string | Date;
   startDate?: string;
   endDate?: string;
 };
@@ -179,15 +217,15 @@ type UpdateDataType = {
 async function updateOrder(
   orderId: string,
   orderType: string,
-  data: ValidatedDataType & { addressId?: string },
-  newAddressId?: string
+  data: ValidatedDataType & { addressId?: string | null },
+  newAddressId?: string | null
 ) {
   const updateData: UpdateDataType = {
-    address: newAddressId || data.addressId,
+    address: newAddressId === null ? null : newAddressId || data.addressId,
   };
 
   if (orderType === 'catering') {
-    updateData.deliveryDate = format(new Date(data.deliveryDate), 'yyyy-MM-dd');
+    updateData.deliveryDate = data.deliveryDate;
     updateData.order_type = data.order_type;
     await Catering.updateOne({ _id: orderId }, { $set: updateData });
     revalidatePath(`/confirm-order/catering/${orderId}`);

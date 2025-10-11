@@ -39,7 +39,7 @@ export const cateringOrderSlice = createSlice({
     },
 
     setDeliveryDate: (state, action: PayloadAction<string>) => {
-      state.deliveryDate = action.payload;
+      state.deliveryDate = action.payload
     },
 
     setCustomerDetails: (

@@ -14,7 +14,6 @@ const AddressSchema = new Schema<AddressDocument>(
     },
     aptSuiteUnit: {
       type: String,
-      required: true,
     },
     street: {
       type: String,

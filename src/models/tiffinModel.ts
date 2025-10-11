@@ -28,7 +28,6 @@ const TiffinSchema = new Schema<TiffinDocument>(
     address: {
       type: mongoose.Schema.Types.ObjectId,
       ref: 'Address',
-      required: true,
     },
     startDate: {
       type: Date,

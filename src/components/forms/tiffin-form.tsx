@@ -58,7 +58,9 @@ export default function TiffinForm() {
   const form = useForm<z.infer<typeof ZodTiffinSchema>>({
     resolver: zodResolver(ZodTiffinSchema),
     defaultValues: {
-      start_date: new Date().toDateString(),
+      start_date: new Date(
+    new Date().setDate(new Date().getDate() + 1)
+  ).toDateString(),
       payment_method: 'cash',
       number_of_weeks: '2',
       order_type: 'pickup',
@@ -104,9 +106,19 @@ export default function TiffinForm() {
 
     const subtotal = (total * 100) / (100 + taxRate);
 
-    if (!address.placeId) {
-      return toast.error('Please select a valid address!');
+    if (!address.placeId && values.order_type === 'delivery') {
+      return toast.error('Address is required for delivery orders');
     }
+
+    console.log({
+      values: {
+        ...values,
+        totalAmount:
+          values.tax === 0 ? subtotal.toString() : values.totalAmount,
+      },
+      googleAddress: address,
+      sentToWhatsapp,
+    });
 
     mutation.mutate({
       values: {
@@ -365,7 +377,6 @@ export default function TiffinForm() {
                         <Calendar
                           disabled={[
                             { dayOfWeek: [0, 6] },
-                            { before: new Date() },
                           ]}
                           initialFocus
                           mode="single"

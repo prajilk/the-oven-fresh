@@ -26,7 +26,7 @@ const AddressCommand = ({
           {customers?.map((customer) => (
             <CommandItem
               className="flex-col items-start justify-start gap-1"
-              key={customer._id}
+              key={customer.address._id.toString()}
               onSelect={() => {
                 setSelectedCustomer(customer);
                 setShowAutocomplete(false);

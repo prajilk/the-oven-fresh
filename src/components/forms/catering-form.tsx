@@ -43,6 +43,7 @@ import AddressAutocomplete from '../address-autocomplete';
 import AddressCommand from '../commands/address-command';
 import OrderTypeSelect from '../select/order-type-select';
 import PaymentSelect from '../select/payment-select';
+import { ScrollArea, ScrollBar } from '../ui/scroll-area';
 import { Textarea } from '../ui/textarea';
 
 export default function CateringForm({
@@ -111,6 +112,36 @@ export default function CateringForm({
       'customerDetails.aptSuiteUnit',
       customer.address.aptSuiteUnit
     );
+  }
+
+  function handleDateSelect(date: Date | undefined) {
+    if (date) {
+      form.setValue('deliveryDate', date);
+      dispatch(setDeliveryDate(date.toISOString()));
+    }
+  }
+
+  // biome-ignore lint/complexity/noExcessiveCognitiveComplexity: <Ignore>
+  function handleTimeChange(type: 'hour' | 'minute' | 'ampm', value: string) {
+    const currentDate = form.getValues('deliveryDate') || new Date();
+    const newDate = new Date(currentDate);
+
+    if (type === 'hour') {
+      const hour = Number.parseInt(value, 10);
+      newDate.setHours(newDate.getHours() >= 12 ? hour + 12 : hour);
+    } else if (type === 'minute') {
+      newDate.setMinutes(Number.parseInt(value, 10));
+    } else if (type === 'ampm') {
+      const hours = newDate.getHours();
+      if (value === 'AM' && hours >= 12) {
+        newDate.setHours(hours - 12);
+      } else if (value === 'PM' && hours < 12) {
+        newDate.setHours(hours + 12);
+      }
+    }
+
+    form.setValue('deliveryDate', newDate);
+    dispatch(setDeliveryDate(newDate.toISOString()));
   }
 
   function resetForm() {
@@ -305,40 +336,120 @@ export default function CateringForm({
             control={form.control}
             name="deliveryDate"
             render={({ field }) => (
-              <FormItem className="flex h-full flex-col justify-between">
-                <FormLabel>Delivery date</FormLabel>
+              <FormItem className="flex flex-col">
+                <FormLabel>Enter date & time</FormLabel>
                 <Popover>
                   <PopoverTrigger asChild>
                     <FormControl>
                       <Button
                         className={cn(
-                          'pl-3 text-left font-normal',
+                          'w-full pl-3 text-left font-normal',
                           !field.value && 'text-muted-foreground'
                         )}
                         variant={'outline'}
                       >
                         {field.value ? (
-                          format(field.value, 'PPP')
+                          format(field.value, 'PPP hh:mm aa')
                         ) : (
-                          <span>Pick a date</span>
+                          <span>MM/DD/YYYY hh:mm aa</span>
                         )}
                         <CalendarIcon className="ml-auto h-4 w-4 opacity-50" />
                       </Button>
                     </FormControl>
                   </PopoverTrigger>
-                  <PopoverContent align="start" className="w-auto p-0">
-                    <Calendar
-                      disabled={{ before: new Date() }}
-                      initialFocus
-                      mode="single"
-                      onSelect={(e) => {
-                        field.onChange(e);
-                        dispatch(
-                          setDeliveryDate(format(e as Date, 'yyyy-MM-dd'))
-                        );
-                      }}
-                      selected={field.value}
-                    />
+                  <PopoverContent className="w-auto p-0">
+                    <div className="sm:flex">
+                      <Calendar
+                        initialFocus
+                        mode="single"
+                        onSelect={handleDateSelect}
+                        selected={field.value}
+                      />
+                      <div className="flex flex-col divide-y sm:h-[300px] sm:flex-row sm:divide-x sm:divide-y-0">
+                        <ScrollArea className="w-64 sm:w-auto">
+                          <div className="flex p-2 sm:flex-col">
+                            {Array.from({ length: 12 }, (_, i) => i + 1)
+                              .reverse()
+                              .map((hour) => (
+                                <Button
+                                  className="aspect-square shrink-0 sm:w-full"
+                                  key={hour}
+                                  onClick={() =>
+                                    handleTimeChange('hour', hour.toString())
+                                  }
+                                  size="icon"
+                                  variant={
+                                    field.value &&
+                                    field.value.getHours() % 12 === hour % 12
+                                      ? 'default'
+                                      : 'ghost'
+                                  }
+                                >
+                                  {hour}
+                                </Button>
+                              ))}
+                          </div>
+                          <ScrollBar
+                            className="sm:hidden"
+                            orientation="horizontal"
+                          />
+                        </ScrollArea>
+                        <ScrollArea className="w-64 sm:w-auto">
+                          <div className="flex p-2 sm:flex-col">
+                            {Array.from({ length: 12 }, (_, i) => i * 5).map(
+                              (minute) => (
+                                <Button
+                                  className="aspect-square shrink-0 sm:w-full"
+                                  key={minute}
+                                  onClick={() =>
+                                    handleTimeChange(
+                                      'minute',
+                                      minute.toString()
+                                    )
+                                  }
+                                  size="icon"
+                                  variant={
+                                    field.value &&
+                                    field.value.getMinutes() === minute
+                                      ? 'default'
+                                      : 'ghost'
+                                  }
+                                >
+                                  {minute.toString().padStart(2, '0')}
+                                </Button>
+                              )
+                            )}
+                          </div>
+                          <ScrollBar
+                            className="sm:hidden"
+                            orientation="horizontal"
+                          />
+                        </ScrollArea>
+                        <ScrollArea className="">
+                          <div className="flex p-2 sm:flex-col">
+                            {['AM', 'PM'].map((ampm) => (
+                              <Button
+                                className="aspect-square shrink-0 sm:w-full"
+                                key={ampm}
+                                onClick={() => handleTimeChange('ampm', ampm)}
+                                size="icon"
+                                variant={
+                                  field.value &&
+                                  ((ampm === 'AM' &&
+                                    field.value.getHours() < 12) ||
+                                    (ampm === 'PM' &&
+                                      field.value.getHours() >= 12))
+                                    ? 'default'
+                                    : 'ghost'
+                                }
+                              >
+                                {ampm}
+                              </Button>
+                            ))}
+                          </div>
+                        </ScrollArea>
+                      </div>
+                    </div>
                   </PopoverContent>
                 </Popover>
                 <FormMessage />

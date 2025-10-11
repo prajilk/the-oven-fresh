@@ -36,6 +36,7 @@ export default function CateringFormStepper() {
       deliveryDate: new Date(new Date().setDate(new Date().getDate() + 1)),
       payment_method: 'cash',
       note: '',
+      order_type: 'delivery',
       customerDetails: {
         firstName: '',
         lastName: '',
@@ -103,6 +104,7 @@ export default function CateringFormStepper() {
         size: item.size,
         priceAtOrder: item.priceAtOrder,
       })),
+      deliveryDate: new Date(order.deliveryDate),
     };
     const result = ZodCateringSchema.safeParse(data);
 
@@ -110,7 +112,6 @@ export default function CateringFormStepper() {
       mutation.mutate({
         values: {
           ...data,
-          deliveryDate: new Date(data.deliveryDate),
         },
         sentToWhatsapp,
       });

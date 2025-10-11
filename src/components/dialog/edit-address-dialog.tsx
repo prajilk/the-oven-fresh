@@ -26,6 +26,7 @@ import type { AddressDocument } from '@/models/types/address';
 import AddressAutocomplete from '../address-autocomplete';
 import { Calendar } from '../ui/calendar';
 import { Popover, PopoverContent, PopoverTrigger } from '../ui/popover';
+import { ScrollArea, ScrollBar } from '../ui/scroll-area';
 import {
   Select,
   SelectContent,
@@ -55,6 +56,7 @@ function isGapInWeeks(
 
 const EditAddressDialog = ({
   orderId,
+  customerId,
   orderType,
   address,
   deliveryDate,
@@ -64,6 +66,7 @@ const EditAddressDialog = ({
   type,
 }: {
   orderId: string;
+  customerId: string;
   orderType: 'catering' | 'tiffin';
   address: AddressDocument;
   numberOfWeeks?: number;
@@ -76,14 +79,47 @@ const EditAddressDialog = ({
   const [open, setOpen] = useState(false);
   const [loading, setLoading] = useState(false);
   const [addressInput, setAddressInput] = useState({
-    address: address.address,
+    address: address?.address || '',
     key: 0,
   });
-  const [placeId, setPlaceId] = useState<string>(address.placeId);
+  const [placeId, setPlaceId] = useState<string>(address?.placeId);
   const [order_type, setOrder_Type] = useState(type);
   const [dDate, setDDate] = useState<Date | undefined>(deliveryDate);
   const [sDate, setSDate] = useState<Date | undefined>(startDate);
   const [eDate, setEDate] = useState<Date | undefined>(new Date(endDate || ''));
+
+  const [isOpen, setIsOpen] = useState(false);
+
+  const hours = Array.from({ length: 12 }, (_, i) => i + 1);
+  const handleDateSelect = (selectedDate: Date | undefined) => {
+    if (selectedDate) {
+      setDDate(selectedDate);
+    }
+  };
+
+  const handleTimeChange = (
+    type: 'hour' | 'minute' | 'ampm',
+    value: string
+    // biome-ignore lint/complexity/noExcessiveCognitiveComplexity: <Ignore>
+  ) => {
+    if (dDate) {
+      const newDate = new Date(dDate);
+      if (type === 'hour') {
+        newDate.setHours(
+          (Number.parseInt(value, 10) % 12) +
+            (newDate.getHours() >= 12 ? 12 : 0)
+        );
+      } else if (type === 'minute') {
+        newDate.setMinutes(Number.parseInt(value, 10));
+      } else if (type === 'ampm') {
+        const currentHours = newDate.getHours();
+        newDate.setHours(
+          value === 'PM' ? currentHours + 12 : currentHours - 12
+        );
+      }
+      setDDate(newDate);
+    }
+  };
 
   useEffect(() => {
     setEDate(endDate);
@@ -99,10 +135,16 @@ const EditAddressDialog = ({
   const handleSubmit = (formData: FormData) => {
     formData.append('orderId', orderId);
     formData.append('orderType', orderType);
-    formData.append('addressId', address._id.toString());
-    formData.append('customerId', address.customerId.toString());
-    formData.append('lat', address.lat.toString());
-    formData.append('lng', address.lng.toString());
+    if (address?._id) {
+      formData.append('addressId', address?._id.toString());
+    }
+    if (customerId) {
+      formData.append('customerId', customerId);
+    }
+    if (address?.lat && address?.lng) {
+      formData.append('lat', address?.lat.toString());
+      formData.append('lng', address?.lng.toString());
+    }
 
     if (dDate) {
       formData.append('deliveryDate', dDate.toString());
@@ -132,7 +174,9 @@ const EditAddressDialog = ({
     toast.promise(promise(), {
       loading: 'Updating delivery address...',
       success: () => 'Delivery address updated successfully.',
-      error: () => 'Failed to update delivery address.',
+      error: (error) => {
+        return error.error || 'Failed to update delivery address.';
+      },
     });
   };
 
@@ -180,6 +224,7 @@ const EditAddressDialog = ({
                     key: 1,
                   })
                 }
+                placeholder="Address"
                 value={addressInput.address}
               />
             </AddressAutocomplete>
@@ -189,7 +234,7 @@ const EditAddressDialog = ({
             <Label htmlFor="aptSuiteUnit">Apt, suite or unit</Label>
             <Input
               className="col-span-3"
-              defaultValue={address.aptSuiteUnit}
+              defaultValue={address?.aptSuiteUnit}
               id="aptSuiteUnit"
               name="aptSuiteUnit"
               placeholder="Apt, suite or unit"
@@ -198,30 +243,114 @@ const EditAddressDialog = ({
           {orderType === 'catering' ? (
             <div className="grid grid-cols-4 gap-2">
               <Label htmlFor="deliveryDate">Delivery Date</Label>
-              <Popover>
+              <Popover onOpenChange={setIsOpen} open={isOpen}>
                 <PopoverTrigger asChild>
                   <ShadButton
                     className={cn(
-                      'col-span-3 w-full pl-3 text-left font-normal',
+                      'col-span-3 w-full justify-start text-left font-normal',
                       !dDate && 'text-muted-foreground'
                     )}
-                    type="button"
-                    variant={'outline'}
+                    variant="outline"
                   >
-                    {dDate ? format(dDate, 'PPP') : <span>Pick a date</span>}
-                    <CalendarIcon className="ml-auto h-4 w-4 opacity-50" />
+                    <CalendarIcon className="mr-2 h-4 w-4" />
+                    {dDate ? (
+                      format(dDate, 'PPP hh:mm aa')
+                    ) : (
+                      <span>Pick a date</span>
+                    )}
                   </ShadButton>
                 </PopoverTrigger>
                 <PopoverContent align="start" className="z-[1560] w-auto p-0">
-                  <Calendar
-                    disabled={{ before: new Date() }}
-                    id="deliveryDate"
-                    initialFocus
-                    mode="single"
-                    onSelect={(e) => setDDate(e as Date)}
-                    required
-                    selected={dDate}
-                  />
+                  <div className="sm:flex">
+                    <Calendar
+                      disabled={{ before: new Date() }}
+                      id="deliveryDate"
+                      initialFocus
+                      mode="single"
+                      onSelect={handleDateSelect}
+                      required
+                      selected={new Date(dDate || '')}
+                    />
+                    <div className="flex flex-col divide-y sm:h-[300px] sm:flex-row sm:divide-x sm:divide-y-0">
+                      <ScrollArea className="w-64 sm:w-auto">
+                        <div className="flex p-2 sm:flex-col">
+                          {hours.reverse().map((hour) => (
+                            <ShadButton
+                              className="aspect-square shrink-0 sm:w-full"
+                              key={hour}
+                              onClick={() =>
+                                handleTimeChange('hour', hour.toString())
+                              }
+                              size="icon"
+                              variant={
+                                dDate &&
+                                new Date(dDate).getHours() % 12 === hour % 12
+                                  ? 'default'
+                                  : 'ghost'
+                              }
+                            >
+                              {hour}
+                            </ShadButton>
+                          ))}
+                        </div>
+                        <ScrollBar
+                          className="sm:hidden"
+                          orientation="horizontal"
+                        />
+                      </ScrollArea>
+                      <ScrollArea className="w-64 sm:w-auto">
+                        <div className="flex p-2 sm:flex-col">
+                          {Array.from({ length: 12 }, (_, i) => i * 5).map(
+                            (minute) => (
+                              <ShadButton
+                                className="aspect-square shrink-0 sm:w-full"
+                                key={minute}
+                                onClick={() =>
+                                  handleTimeChange('minute', minute.toString())
+                                }
+                                size="icon"
+                                variant={
+                                  dDate &&
+                                  new Date(dDate).getMinutes() === minute
+                                    ? 'default'
+                                    : 'ghost'
+                                }
+                              >
+                                {minute}
+                              </ShadButton>
+                            )
+                          )}
+                        </div>
+                        <ScrollBar
+                          className="sm:hidden"
+                          orientation="horizontal"
+                        />
+                      </ScrollArea>
+                      <ScrollArea className="">
+                        <div className="flex p-2 sm:flex-col">
+                          {['AM', 'PM'].map((ampm) => (
+                            <ShadButton
+                              className="aspect-square shrink-0 sm:w-full"
+                              key={ampm}
+                              onClick={() => handleTimeChange('ampm', ampm)}
+                              size="icon"
+                              variant={
+                                dDate &&
+                                ((ampm === 'AM' &&
+                                  new Date(dDate).getHours() < 12) ||
+                                  (ampm === 'PM' &&
+                                    new Date(dDate).getHours() >= 12))
+                                  ? 'default'
+                                  : 'ghost'
+                              }
+                            >
+                              {ampm}
+                            </ShadButton>
+                          ))}
+                        </div>
+                      </ScrollArea>
+                    </div>
+                  </div>
                 </PopoverContent>
               </Popover>
             </div>

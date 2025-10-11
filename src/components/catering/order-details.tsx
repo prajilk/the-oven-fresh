@@ -344,6 +344,7 @@ export default function CateringOrderDetails({
 
         <AddressCard
           address={orderData.address}
+          customerId={orderData.customer._id.toString()}
           deliveryDate={orderData.deliveryDate}
           order_type={orderData.order_type}
           orderId={orderData._id.toString()}

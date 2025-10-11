@@ -270,7 +270,7 @@ export default function TiffinOrderTable({
         orderId: order.orderId,
         customerName: order.customerName,
         phone: order.customerPhone,
-        address: order.address.address,
+        address: order.address?.address,
         startDate: format(new Date(order.startDate), 'PPP'),
         endDate: format(new Date(order.endDate), 'PPP'),
         numberOfWeeks: order.numberOfWeeks,

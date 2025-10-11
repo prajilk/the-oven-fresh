@@ -19,8 +19,7 @@ const CateringSchema = new Schema<CateringDocument>(
     },
     address: {
       type: mongoose.Schema.Types.ObjectId,
-      ref: 'Address',
-      required: true,
+      ref: 'Address'
     },
     customerName: {
       type: String,

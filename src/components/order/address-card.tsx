@@ -10,6 +10,7 @@ const AddressCard = ({
   startDate,
   endDate,
   orderId,
+  customerId,
   orderType,
   numberOfWeeks,
   order_type,
@@ -19,6 +20,7 @@ const AddressCard = ({
   startDate?: Date;
   endDate?: Date;
   orderId: string;
+  customerId: string;
   orderType: 'catering' | 'tiffin';
   numberOfWeeks?: number;
   order_type?: 'pickup' | 'delivery';
@@ -32,6 +34,7 @@ const AddressCard = ({
         </CardTitle>
         <EditAddressDialog
           address={address}
+          customerId={customerId}
           deliveryDate={deliveryDate}
           endDate={endDate}
           numberOfWeeks={numberOfWeeks}
@@ -43,14 +46,14 @@ const AddressCard = ({
       </CardHeader>
       <CardContent>
         <div className="grid gap-2">
-          <div>{address.address}</div>
+          <div>{address ? address.address : 'No address provided!'}</div>
           <div className="text-muted-foreground text-sm">
-            Coordinates: {address.lat}, {address.lng}
+            {address?.lat && address?.lng && `Coordinates: ${address?.lat}, ${address?.lng}`}
           </div>
           {orderType === 'catering' && deliveryDate ? (
             <>
               <div className="text-muted-foreground text-sm">
-                Delivery Date: {format(deliveryDate, 'MMMM d, yyyy')}
+                Delivery Date: {format(deliveryDate, 'MMMM d, yyyy h:mm a')}
               </div>
               <div className="text-muted-foreground text-sm">
                 Order Type: <span className="capitalize">{order_type}</span>

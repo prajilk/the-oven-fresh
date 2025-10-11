@@ -43,6 +43,13 @@ export async function editTiffinOrderAction(formData: FormData) {
       return { error: 'Missing required fields.' };
     }
 
+    if(order_type === 'delivery') {
+      const tiffin = await Tiffin.findOne({ _id: orderId }, "address");
+      if(tiffin?.address === null) {
+        return { error: 'Address is required for delivery orders' };
+      }
+    }
+
     // Parse and validate order data using Zod schema
     const validation = ZodTiffinSchema.pick({
       number_of_weeks: true,

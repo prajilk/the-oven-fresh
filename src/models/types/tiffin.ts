@@ -10,7 +10,7 @@ export type TiffinDocument = {
   customer: mongoose.Schema.Types.ObjectId;
   customerName: string;
   customerPhone: string;
-  address: mongoose.Schema.Types.ObjectId;
+  address: mongoose.Schema.Types.ObjectId | null;
   startDate: Date;
   endDate: Date;
   numberOfWeeks: number;
