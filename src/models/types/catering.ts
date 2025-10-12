@@ -13,6 +13,7 @@ export type CateringDocument = {
   customerName: string;
   customerPhone: string;
   deliveryDate: Date;
+  deliveryDateLocal: Date;
   items: {
     itemId: string;
     priceAtOrder: number;

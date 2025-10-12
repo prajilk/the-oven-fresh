@@ -1,4 +1,4 @@
-import { addMinutes, endOfDay, startOfDay } from 'date-fns';
+import { format } from 'date-fns';
 import mongoose from 'mongoose';
 import Address from '@/models/addressModel';
 import CateringMenu from '@/models/cateringMenuModel';
@@ -12,18 +12,9 @@ async function getScheduledCateringOrders(
   date: Date | string,
   store: string
 ): Promise<CateringDocumentPopulate[]> {
-  // Convert local date to UTC range
-  const localDate = new Date(date); // '2025-10-13'
-  const startIST = startOfDay(localDate);
-  const endIST = endOfDay(localDate);
-
-  // Convert Local to UTC
-  const startUTC = addMinutes(startIST, -330);
-  const endUTC = addMinutes(endIST, -330);
-
   return await Catering.find(
     {
-      deliveryDate: { $gte: startUTC, $lte: endUTC },
+      deliveryDateLocal: format(new Date(date), 'yyyy-MM-dd'),
       status: { $in: ['PENDING', 'ONGOING'] },
       store: mongoose.Types.ObjectId.createFromHexString(store),
     },

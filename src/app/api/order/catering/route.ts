@@ -1,3 +1,4 @@
+import { format } from 'date-fns';
 import { getPlaceDetails } from '@/lib/google';
 import {
   error400,
@@ -118,6 +119,7 @@ async function postHandler(req: AuthenticatedRequest) {
       store,
       orderId: generateOrderId(),
       deliveryDate: orderData.deliveryDate,
+      deliveryDateLocal: format(new Date(orderData.deliveryDate), 'yyyy-MM-dd'),
       pendingBalance: Number(orderData.pendingBalance)?.toFixed(2),
       totalPrice: Number(orderData.totalPrice)?.toFixed(2),
       tax: Number(orderData.tax)?.toFixed(2),

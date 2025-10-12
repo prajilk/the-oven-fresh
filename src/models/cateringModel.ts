@@ -19,7 +19,7 @@ const CateringSchema = new Schema<CateringDocument>(
     },
     address: {
       type: mongoose.Schema.Types.ObjectId,
-      ref: 'Address'
+      ref: 'Address',
     },
     customerName: {
       type: String,
@@ -30,6 +30,10 @@ const CateringSchema = new Schema<CateringDocument>(
       required: true,
     },
     deliveryDate: {
+      type: Date,
+      required: true,
+    },
+    deliveryDateLocal: {
       type: Date,
       required: true,
     },

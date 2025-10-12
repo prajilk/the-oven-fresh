@@ -21,7 +21,7 @@ const CateringStickerPage = async ({
 
   await connectDB();
   const orders = (await Catering.find({
-    deliveryDate: {
+    deliveryDateLocal: {
       $gte: fromDate,
       $lte: toDate,
     },

@@ -9,10 +9,13 @@ import { getCurrentUser } from '@/lib/auth';
 import Store from '@/models/storeModel';
 import MuiThemeProvider from '@/providers/mui-theme-provider';
 
-export default async function DashboardLayout(
-  { children }: { children: React.ReactNode },
-  props: { disableCustomTheme?: boolean }
-) {
+export default async function DashboardLayout({
+  children,
+  disableCustomTheme,
+}: {
+  children: React.ReactNode;
+  disableCustomTheme?: boolean;
+}) {
   const user = await getCurrentUser();
 
   if (!user || user.role === 'delivery') {
@@ -30,7 +33,7 @@ export default async function DashboardLayout(
   const store = allStores.find((store) => store.id === user.storeId.toString());
 
   return (
-    <MuiThemeProvider props={props}>
+    <MuiThemeProvider props={{ disableCustomTheme }}>
       <CssBaseline enableColorScheme />
       <Box sx={{ display: 'flex' }}>
         <SideMenu />

@@ -25,7 +25,7 @@ async function getTiffins(storeId: string, date: string) {
 async function getCaterings(storeId: string, date: string) {
   return await Catering.find({
     store: storeId,
-    deliveryDate: date,
+    deliveryDateLocal: date,
   })
     .populate({
       path: 'address',

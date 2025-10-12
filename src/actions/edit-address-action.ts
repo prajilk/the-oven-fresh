@@ -209,6 +209,7 @@ type UpdateDataType = {
   address?: string | null;
   order_type?: string;
   deliveryDate?: string | Date;
+  deliveryDateLocal?: string | Date;
   startDate?: string;
   endDate?: string;
 };
@@ -226,6 +227,10 @@ async function updateOrder(
 
   if (orderType === 'catering') {
     updateData.deliveryDate = data.deliveryDate;
+    updateData.deliveryDateLocal = format(
+      new Date(data.deliveryDate),
+      'yyyy-MM-dd'
+    );
     updateData.order_type = data.order_type;
     await Catering.updateOne({ _id: orderId }, { $set: updateData });
     revalidatePath(`/confirm-order/catering/${orderId}`);

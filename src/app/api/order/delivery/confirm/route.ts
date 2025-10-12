@@ -1,5 +1,4 @@
 import { format } from 'date-fns';
-import { Types } from 'mongoose';
 import { error400, error403, error500, success200 } from '@/lib/response';
 import type { AuthenticatedRequest } from '@/lib/types/auth-request';
 import { capitalizeName, isRestricted } from '@/lib/utils';
@@ -80,7 +79,7 @@ async function patchHandler(req: AuthenticatedRequest) {
 
       // Fetch store settings
       const settings = await Setting.findOne({
-        store: Types.ObjectId.createFromHexString(storeId),
+        store: storeId,
       });
 
       // Send WhatsApp message if allowed
