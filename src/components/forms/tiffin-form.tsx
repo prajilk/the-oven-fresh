@@ -59,8 +59,8 @@ export default function TiffinForm() {
     resolver: zodResolver(ZodTiffinSchema),
     defaultValues: {
       start_date: new Date(
-    new Date().setDate(new Date().getDate() + 1)
-  ).toDateString(),
+        new Date().setDate(new Date().getDate() + 1)
+      ).toDateString(),
       payment_method: 'cash',
       number_of_weeks: '2',
       order_type: 'pickup',
@@ -109,16 +109,6 @@ export default function TiffinForm() {
     if (!address.placeId && values.order_type === 'delivery') {
       return toast.error('Address is required for delivery orders');
     }
-
-    console.log({
-      values: {
-        ...values,
-        totalAmount:
-          values.tax === 0 ? subtotal.toString() : values.totalAmount,
-      },
-      googleAddress: address,
-      sentToWhatsapp,
-    });
 
     mutation.mutate({
       values: {
@@ -375,9 +365,7 @@ export default function TiffinForm() {
                       </PopoverTrigger>
                       <PopoverContent align="start" className="w-auto p-0">
                         <Calendar
-                          disabled={[
-                            { dayOfWeek: [0, 6] },
-                          ]}
+                          disabled={[{ dayOfWeek: [0, 6] }]}
                           initialFocus
                           mode="single"
                           onSelect={(e) => {

@@ -90,9 +90,7 @@ export function TiffinConfirmDrawer({
     return (
       <Dialog onOpenChange={setOpen} open={open}>
         <DialogTrigger asChild>
-          <Button 
-          disabled={!form.formState.isValid}
-          >Submit</Button>
+          <Button disabled={!form.formState.isValid}>Submit</Button>
         </DialogTrigger>
         <DialogContent className="z-[1550] flex max-h-[90%] max-w-xl flex-col">
           <DialogHeader>
@@ -229,9 +227,7 @@ function WhatsappButton({
   return (
     <LoadingButton
       className="flex items-center gap-2 border-green-200 text-green-500 hover:bg-green-100 hover:text-green-500"
-      disabled={
-        advanceAmount === '' || !form.formState.isValid || mutation.isPending
-      }
+      disabled={!form.formState.isValid || mutation.isPending}
       form="tiffin-form"
       isLoading={mutation.isPending}
       onClick={() => {
@@ -269,9 +265,7 @@ function ConfirmOrderButton({
 }) {
   return (
     <LoadingButton
-      disabled={
-        !form.formState.isValid || mutation.isPending
-      }
+      disabled={!form.formState.isValid || mutation.isPending}
       form="tiffin-form"
       isLoading={mutation.isPending}
       onClick={() => {

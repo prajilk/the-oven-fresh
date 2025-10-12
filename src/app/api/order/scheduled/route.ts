@@ -23,7 +23,7 @@ async function getHandler(req: AuthenticatedRequest) {
     const cateringData = catering.map((item) => ({
       _id: item._id.toString(),
       store: item.store._id,
-      address: item.address.address,
+      address: item.address?.address,
       customerName: item.customerName,
       customerPhone: item.customerPhone,
       order: 'catering',

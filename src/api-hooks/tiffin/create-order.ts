@@ -41,7 +41,7 @@ export function useCreateTiffinOrder(
       onSuccess(queryClient);
       if (result.messageSent === false) {
         toast.error('Error sending whatsapp message.');
-      } else if(result.messageSent === true) {
+      } else if (result.messageSent === true) {
         toast.success('Order details sent to customer.');
       }
     },

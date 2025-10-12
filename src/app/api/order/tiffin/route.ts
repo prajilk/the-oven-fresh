@@ -71,20 +71,18 @@ async function postHandler(req: AuthenticatedRequest) {
         lng: customerDetails.lng,
       };
 
-      if(data.googleAddress.placeId) {
+      if (data.googleAddress.placeId && !(placeData.lat && placeData.lng)) {
         // Get lat and lng of the address
-        if (!(placeData.lat && placeData.lng)) {
-          const place = await getPlaceDetails(data.googleAddress.placeId);
-          if (!place) {
-            return error400('Unable to get coordinates.', {});
-          }
-          placeData.lat = place.lat;
-          placeData.lng = place.lng;
-          placeData.street = place.street;
-          placeData.city = place.city;
-          placeData.province = place.province;
-          placeData.zipCode = place.zipCode;
+        const place = await getPlaceDetails(data.googleAddress.placeId);
+        if (!place) {
+          return error400('Unable to get coordinates.', {});
         }
+        placeData.lat = place.lat;
+        placeData.lng = place.lng;
+        placeData.street = place.street;
+        placeData.city = place.city;
+        placeData.province = place.province;
+        placeData.zipCode = place.zipCode;
       }
 
       // 1️⃣ Find or Create Customer (Atomic)
@@ -97,8 +95,8 @@ async function postHandler(req: AuthenticatedRequest) {
         { new: true, upsert: true, setDefaultsOnInsert: true }
       );
 
-      let customerAddress;
-      if(data.googleAddress.address && data.googleAddress.placeId) {
+      let customerAddress: unknown;
+      if (data.googleAddress.address && data.googleAddress.placeId) {
         // 2️⃣ Find or Create Address (Atomic)
         customerAddress = await Address.findOneAndUpdate(
           {
@@ -142,7 +140,9 @@ async function postHandler(req: AuthenticatedRequest) {
           customer: customer._id,
           customerName: `${customer.firstName} ${customer.lastName}`,
           customerPhone: customer.phone,
-          address: customerAddress ? customerAddress._id : null,
+          address: customerAddress
+            ? (customerAddress as { _id: string })._id
+            : null,
         }),
         // 4️⃣ Create Order Status
         await createOrderStatus(
@@ -166,6 +166,8 @@ async function postHandler(req: AuthenticatedRequest) {
             },
             process.env.TWILIO_ORDER_CONFIRM_ID
           );
+
+          return success201({ messageSent: true });
         } catch {
           return success201({
             messageSent: false,
@@ -173,7 +175,7 @@ async function postHandler(req: AuthenticatedRequest) {
         }
       }
 
-      return success201({ messageSent: true });
+      return success201({});
     }
 
     if (result.error) {

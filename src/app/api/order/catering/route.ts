@@ -144,6 +144,7 @@ async function postHandler(req: AuthenticatedRequest) {
           },
           process.env.TWILIO_ORDER_CONFIRM_ID
         );
+        return success201({ order, messageSent: true });
       } catch {
         return success201({
           messageSent: false,
