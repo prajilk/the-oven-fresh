@@ -214,12 +214,12 @@ export default function CateringFormStepper() {
         <>
           {activeStep === 0 && (
             <Box sx={{ mt: 2, mb: 1 }}>
-              <SelectItems data={menu} isPending={isPending} />
+              <CateringForm form={form} />
             </Box>
           )}
           {activeStep === 1 && (
             <Box sx={{ mt: 2, mb: 1 }}>
-              <CateringForm form={form} />
+              <SelectItems data={menu} isPending={isPending} />
             </Box>
           )}
           {activeStep === 2 && (
