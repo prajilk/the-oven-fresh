@@ -2,9 +2,11 @@
 
 import { usePendingDetails } from '@/api-hooks/admin/get-pending-details';
 import PendingPaymentsTable from '../data-table/pending-payments-table';
+import { useStores } from '@/api-hooks/stores/get-stores';
 
 const PendingDetails = () => {
   const { data: pendingDetails, isPending } = usePendingDetails();
+  const {data: stores } = useStores();
   return (
     <div className="mt-7 space-y-6 rounded-lg border bg-white p-6 shadow-md">
       <div className="space-y-2">
@@ -15,7 +17,7 @@ const PendingDetails = () => {
           All pending payments by store and service
         </p>
       </div>
-      <PendingPaymentsTable data={pendingDetails || []} isPending={isPending} />
+      <PendingPaymentsTable data={pendingDetails || []} isPending={isPending} stores={stores || []} />
     </div>
   );
 };

@@ -23,6 +23,8 @@ export function SelectedItemsList() {
   const cateringCustomItem = useSelector(
     (state: RootState) => state.cateringCustomItem
   );
+  const orderDetail = useSelector((state: RootState) => state.cateringOrder);
+  const deliveryCharge = orderDetail.deliveryCharge;
   const dispatch = useDispatch();
 
   const total =
@@ -30,8 +32,8 @@ export function SelectedItemsList() {
       (acc, item) => acc + item.priceAtOrder * item.quantity,
       0
     ) + cateringCustomItem.reduce((acc, item) => acc + item.priceAtOrder, 0);
-  const tax = (total * Number(process.env.NEXT_PUBLIC_TAX_AMOUNT || 0)) / 100;
-  const totalPayment = total + tax;
+  const tax = ((total + deliveryCharge) * Number(process.env.NEXT_PUBLIC_TAX_AMOUNT || 0)) / 100;
+  const totalPayment = total + deliveryCharge + tax;
 
   const handleRemoveItem = (id: string, size: string) => {
     dispatch(removeItem({ _id: id, size }));
@@ -137,6 +139,10 @@ export function SelectedItemsList() {
                   <div className="flex justify-between text-xs">
                     <span className="text-muted-foreground">Sub Total</span>
                     <span className="font-medium">${total}</span>
+                  </div>
+                  <div className="flex justify-between text-xs">
+                    <span className="text-muted-foreground">Delivery Charge</span>
+                    <span className="font-medium">${deliveryCharge.toFixed(2)}</span>
                   </div>
                   <div className="flex justify-between text-xs">
                     <span className="text-muted-foreground">Tax</span>

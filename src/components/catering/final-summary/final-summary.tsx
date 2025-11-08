@@ -81,8 +81,8 @@ export default function FinalSummary({
       return;
     }
     const tax =
-      (subtotal * (Number(process.env.NEXT_PUBLIC_TAX_AMOUNT) || 0)) / 100;
-    const total = subtotal + tax + deliveryCharge;
+      ((subtotal + deliveryCharge) * (Number(process.env.NEXT_PUBLIC_TAX_AMOUNT) || 0)) / 100;
+    const total = subtotal + deliveryCharge + tax;
     dispatch(setTotalPrice(total));
     dispatch(setTaxAmount(tax));
   }, [subtotal, noTax, dispatch, deliveryCharge]);
@@ -165,6 +165,10 @@ export default function FinalSummary({
                 <span>Subtotal</span>
                 <span>${subtotal.toFixed(2)}</span>
               </div>
+              <div className="flex justify-between">
+                <span>Delivery Charge</span>
+                <span>${orderDetail.deliveryCharge}</span>
+              </div>
               <div className="flex flex-col gap-1">
                 <div className="flex justify-between">
                   <span>
@@ -189,10 +193,6 @@ export default function FinalSummary({
                     Remove tax
                   </Checkbox>
                 </div>
-              </div>
-              <div className="flex justify-between">
-                <span>Delivery Charge</span>
-                <span>${orderDetail.deliveryCharge}</span>
               </div>
               <div className="flex justify-between">
                 <span>Advance Paid</span>

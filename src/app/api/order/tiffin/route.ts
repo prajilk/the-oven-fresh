@@ -9,7 +9,7 @@ import {
   success201,
 } from '@/lib/response';
 import type { AuthenticatedRequest } from '@/lib/types/auth-request';
-import { generateOrderId, isRestricted } from '@/lib/utils';
+import { formatTimezone, generateOrderId, isRestricted } from '@/lib/utils';
 import { sendWhatsappMessage } from '@/lib/whatsapp';
 import { withDbConnectAndAuth } from '@/lib/with-db-connect-and-auth';
 import { ZodTiffinSchema } from '@/lib/zod-schema/schema';
@@ -145,10 +145,12 @@ async function postHandler(req: AuthenticatedRequest) {
             : null,
         }),
         // 4️⃣ Create Order Status
-        await createOrderStatus(
+        createOrderStatus(
           tiffinId,
-          formatDate(new Date(start_date), 'yyyy-MM-dd'),
-          formatDate(new Date(end_date), 'yyyy-MM-dd'),
+          new Date(start_date).toDateString(),
+          // formatDate(new Date(start_date), 'yyyy-MM-dd'),
+          new Date(end_date).toDateString(),
+          // formatDate(new Date(end_date), 'yyyy-MM-dd'),
           storeId
         ),
       ]);
@@ -219,7 +221,13 @@ async function getHandler(req: AuthenticatedRequest) {
     // .populate({ path: "store", model: Store })
     // .populate({ path: "customer", model: Customer })
 
-    return success200({ orders });
+    const formattedOrders = orders.map((item) => ({
+      ...item._doc,
+      startDate: formatTimezone(item.startDate),
+      endDate: formatTimezone(item.endDate),
+    }));
+
+    return success200({ orders: formattedOrders });
   } catch (error) {
     if (error instanceof Error) {
       return error500({ error: error.message });

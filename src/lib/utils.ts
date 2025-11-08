@@ -1,4 +1,5 @@
 import { type ClassValue, clsx } from 'clsx';
+import { fromZonedTime } from 'date-fns-tz';
 import { customAlphabet } from 'nanoid';
 import type { UseFormReturn } from 'react-hook-form';
 import { twMerge } from 'tailwind-merge';
@@ -288,6 +289,13 @@ function capitalizeName(name = ''): string {
   return name ? name[0].toUpperCase() + name.slice(1) : 'N/A';
 }
 
+function formatTimezone(date: Date) {
+  return fromZonedTime(
+    date.toISOString().split('T')[0],
+    'America/Toronto'
+  ).toISOString();
+}
+
 export {
   cn,
   isRestricted,
@@ -304,4 +312,5 @@ export {
   addWeekdays,
   haversine,
   capitalizeName,
+  formatTimezone,
 };

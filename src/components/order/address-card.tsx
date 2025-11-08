@@ -48,7 +48,9 @@ const AddressCard = ({
         <div className="grid gap-2">
           <div>{address ? address.address : 'No address provided!'}</div>
           <div className="text-muted-foreground text-sm">
-            {address?.lat && address?.lng && `Coordinates: ${address?.lat}, ${address?.lng}`}
+            {address?.lat &&
+              address?.lng &&
+              `Coordinates: ${address?.lat}, ${address?.lng}`}
           </div>
           {orderType === 'catering' && deliveryDate ? (
             <>

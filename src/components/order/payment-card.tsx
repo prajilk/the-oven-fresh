@@ -93,10 +93,12 @@ const PaymentCard = ({
                 <Show>
                   <Show.When isTrue={fullyPaid}>Fully Paid</Show.When>
                   <Show.Else>
-                    <Show.When isTrue={pendingBalance >= 0}>
-                      Partially Paid
-                    </Show.When>
-                    <Show.Else>Paid</Show.Else>
+                    <Show>
+                      <Show.When isTrue={pendingBalance >= 0}>
+                        Partially Paid
+                      </Show.When>
+                      <Show.Else>Paid</Show.Else>
+                    </Show>
                   </Show.Else>
                 </Show>
               </Badge>

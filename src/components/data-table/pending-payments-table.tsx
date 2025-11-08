@@ -19,8 +19,11 @@ import {
 import { format } from 'date-fns';
 import { ListFilter, Loader2, PlusCircle } from 'lucide-react';
 import Link from 'next/link';
-import React from 'react';
 import type { PendingDetailsProps } from '@/lib/types/finance';
+import { useCallback, useMemo, useState } from 'react';
+import { useSelector } from 'react-redux';
+import { RootState } from '@/store';
+import { StoreDocument } from '@/models/types/store';
 
 export const columns = [
   { name: 'ID', uid: 'orderId' },
@@ -39,19 +42,21 @@ const orderOptions = [
 export default function PendingPaymentsTable({
   data,
   isPending,
+  stores
 }: {
   isPending: boolean;
   data: PendingDetailsProps[];
+  stores: StoreDocument[];
 }) {
-  const [orderFilter, setOrderFilter] = React.useState<Selection>('all');
-  const [filterValue, setFilterValue] = React.useState('');
-  const [rowsPerPage, setRowsPerPage] = React.useState(10);
-
-  const [page, setPage] = React.useState(1);
+  const [orderFilter, setOrderFilter] = useState<Selection>('all');
+  const [storeFilter, setStoreFilter] = useState<Selection>('all');
+  const [filterValue, setFilterValue] = useState('');
+  const [rowsPerPage, setRowsPerPage] = useState(10);
+  const [page, setPage] = useState(1);
 
   const hasSearchFilter = Boolean(filterValue);
 
-  const filteredItems = React.useMemo(() => {
+  const filteredItems = useMemo(() => {
     let filteredDetails = [...data];
 
     if (hasSearchFilter) {
@@ -72,12 +77,25 @@ export default function PendingPaymentsTable({
       );
     }
 
+    // Filter by store
+    if (
+      storeFilter !== 'all' &&
+      Array.from(storeFilter).length !== stores.length
+    ) {
+      const selectedStores = Array.from(storeFilter);
+      console.log(selectedStores);
+      
+      filteredDetails = filteredDetails.filter((detail) =>
+        selectedStores.includes(detail.store?.toLowerCase())
+      );
+    }
+
     return filteredDetails;
-  }, [data, filterValue, orderFilter, hasSearchFilter]);
+  }, [data, filterValue, orderFilter, storeFilter, hasSearchFilter]);
 
   const pages = Math.ceil(filteredItems.length / rowsPerPage);
 
-  const renderCell = React.useCallback(
+  const renderCell = useCallback(
     (order: PendingDetailsProps, columnKey: React.Key) => {
       const cellValue = order[columnKey as keyof PendingDetailsProps];
 
@@ -105,19 +123,19 @@ export default function PendingPaymentsTable({
     []
   );
 
-  const onNextPage = React.useCallback(() => {
+  const onNextPage = useCallback(() => {
     if (page < pages) {
       setPage(page + 1);
     }
   }, [page, pages]);
 
-  const onPreviousPage = React.useCallback(() => {
+  const onPreviousPage = useCallback(() => {
     if (page > 1) {
       setPage(page - 1);
     }
   }, [page]);
 
-  const onRowsPerPageChange = React.useCallback(
+  const onRowsPerPageChange = useCallback(
     (e: React.ChangeEvent<HTMLSelectElement>) => {
       setRowsPerPage(Number(e.target.value));
       setPage(1);
@@ -125,7 +143,7 @@ export default function PendingPaymentsTable({
     []
   );
 
-  const onSearchChange = React.useCallback((value?: string) => {
+  const onSearchChange = useCallback((value?: string) => {
     if (value) {
       setFilterValue(value);
       setPage(1);
@@ -134,12 +152,12 @@ export default function PendingPaymentsTable({
     }
   }, []);
 
-  const onClear = React.useCallback(() => {
+  const onClear = useCallback(() => {
     setFilterValue('');
     setPage(1);
   }, []);
 
-  const topContent = React.useMemo(() => {
+  const topContent = useMemo(() => {
     return (
       <div className="flex flex-col gap-4">
         <div className="flex flex-wrap items-end gap-3">
@@ -191,6 +209,33 @@ export default function PendingPaymentsTable({
                 ))}
               </DropdownMenu>
             </Dropdown>
+            <Dropdown>
+              <DropdownTrigger className="hidden sm:flex">
+                <Button
+                  className="h-9 rounded-md border border-dashed bg-white shadow-sm"
+                  size="sm"
+                  startContent={<PlusCircle className="h-4 w-4" />}
+                  variant="bordered"
+                >
+                  Store
+                </Button>
+              </DropdownTrigger>
+              <DropdownMenu
+                aria-label="Store wise"
+                className="scrollbar-thin max-h-96 overflow-y-scroll"
+                closeOnSelect={false}
+                disallowEmptySelection
+                onSelectionChange={setStoreFilter}
+                selectedKeys={storeFilter}
+                selectionMode="multiple"
+              >
+                {stores.map((column) => (
+                  <DropdownItem className="capitalize" key={column.location.toLowerCase()}>
+                    {column.location}
+                  </DropdownItem>
+                ))}
+              </DropdownMenu>
+            </Dropdown>
           </div>
         </div>
         <div className="flex items-center justify-between">
@@ -214,13 +259,14 @@ export default function PendingPaymentsTable({
   }, [
     filterValue,
     orderFilter,
+    storeFilter,
     onSearchChange,
     onRowsPerPageChange,
     onClear,
     data,
   ]);
 
-  const bottomContent = React.useMemo(() => {
+  const bottomContent = useMemo(() => {
     return (
       <div className="flex items-center justify-between px-2 py-2">
         <Pagination

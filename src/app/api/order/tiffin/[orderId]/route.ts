@@ -1,7 +1,7 @@
 import { revalidatePath } from 'next/cache';
 import { error403, error404, error500, success200 } from '@/lib/response';
 import type { AuthenticatedRequest } from '@/lib/types/auth-request';
-import { isRestricted } from '@/lib/utils';
+import { formatTimezone, isRestricted } from '@/lib/utils';
 import { withDbConnectAndAuth } from '@/lib/with-db-connect-and-auth';
 import Address from '@/models/addressModel';
 import Catering from '@/models/cateringModel';
@@ -71,7 +71,7 @@ async function getHandler(
     const { orderId } = await params;
     const mid = req.nextUrl.searchParams.get('mid');
 
-    const [orders, status] = await Promise.all([
+    const [order, status] = await Promise.all([
       Tiffin.findOne({ orderId })
         .populate({ path: 'address', model: Address })
         .populate({ path: 'customer', model: Customer })
@@ -79,9 +79,19 @@ async function getHandler(
       TiffinOrderStatus.find({ orderId: mid }),
     ]);
 
-    if (orders) {
+    const formattedStatus = status.map((item) => ({
+      ...item._doc,
+      date: formatTimezone(item.date),
+    }));
+
+    if (order) {
       return success200({
-        orders: { ...orders?._doc, individualStatus: status },
+        orders: {
+          ...order?._doc,
+          startDate: formatTimezone(order._doc.startDate),
+          endDate: formatTimezone(order._doc.endDate),
+          individualStatus: formattedStatus,
+        },
       });
     }
     return success200({ orders: null });

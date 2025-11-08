@@ -1,4 +1,3 @@
-import { format } from 'date-fns';
 import mongoose from 'mongoose';
 import Address from '@/models/addressModel';
 import CateringMenu from '@/models/cateringMenuModel';
@@ -14,7 +13,7 @@ async function getScheduledCateringOrders(
 ): Promise<CateringDocumentPopulate[]> {
   return await Catering.find(
     {
-      deliveryDateLocal: format(new Date(date), 'yyyy-MM-dd'),
+      deliveryDateLocal: date,
       status: { $in: ['PENDING', 'ONGOING'] },
       store: mongoose.Types.ObjectId.createFromHexString(store),
     },

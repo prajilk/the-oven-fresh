@@ -6,7 +6,21 @@ import { ZodCateringSchema } from '@/lib/zod-schema/schema';
 import Catering from '@/models/cateringModel';
 import Tiffin from '@/models/tiffinModel';
 
-export async function editPaymentAction(formData: FormData) {
+type ValueProps = {
+    subtotal: number,
+    deliveryCharge: number,
+    discount: number,
+    tax: number,
+    total: number,
+    advancePaid: number,
+    pendingBalance: number,
+    paymentMethod: string,
+    fullyPaid: boolean,
+    orderId: string,
+    orderType: "catering" | "tiffin",
+  }
+
+export async function editPaymentAction(values: ValueProps) {
   try {
     // Authorize the user
     await withDbConnectAndActionAuth();
@@ -22,7 +36,7 @@ export async function editPaymentAction(formData: FormData) {
       fullyPaid,
       deliveryCharge,
       discount,
-    } = Object.fromEntries(formData.entries());
+    } = values;
 
     if (!orderId) {
       return { error: 'Invalid order ID.' };
@@ -47,7 +61,7 @@ export async function editPaymentAction(formData: FormData) {
       payment_method: paymentMethod,
       advancePaid: Number(advancePaid),
       pendingBalance: Number(pendingBalance),
-      fullyPaid: fullyPaid === 'true',
+      fullyPaid,
       discount: Number(discount),
     });
 

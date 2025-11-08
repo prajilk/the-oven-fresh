@@ -11,7 +11,7 @@ import { Badge } from '../ui/badge';
 const StoreDisplay = async () => {
   const user = await getCurrentUser();
 
-  if (!user || user.role !== 'admin') {
+  if (!user) {
     return null;
   }
 

@@ -3,7 +3,6 @@ import { Suspense } from 'react';
 import { Skeleton } from '../ui/skeleton';
 import NavbarBreadcrumbs from './navbar-breadcrumbs';
 import StoreDisplay from './store-display';
-// import { Badge } from "@heroui/badge";
 
 export default function Header() {
   return (

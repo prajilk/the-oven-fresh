@@ -1,5 +1,7 @@
+import { Box, Stack } from '@mui/material';
 import { notFound } from 'next/navigation';
 import CateringOrderDetails from '@/components/catering/order-details';
+import Header from '@/components/dashboard/header';
 import TiffinOrderDetails from '@/components/tiffin/order-details';
 import { getOrderServer } from '@/lib/api/order/get-order';
 import type { CateringDocumentPopulate } from '@/models/types/catering';
@@ -30,13 +32,25 @@ const OrderPage = async ({
   }
 
   return (
-    <div className="container mx-auto py-10">
-      {orderType === 'catering' ? (
-        <CateringOrderDetails orderData={order as CateringDocumentPopulate} />
-      ) : (
-        <TiffinOrderDetails orderData={order as TiffinDocumentPopulate} />
-      )}
-    </div>
+    <Box className="flex-grow overflow-auto" component="main">
+      <Header />
+      <Stack
+        spacing={2}
+        sx={{
+          alignItems: 'center',
+          mx: { xs: 1.5, md: 3 },
+          pb: 5,
+          pt: { xs: 2, md: 0 },
+          mt: { xs: 8, md: 2 },
+        }}
+      >
+        {orderType === 'catering' ? (
+          <CateringOrderDetails orderData={order as CateringDocumentPopulate} />
+        ) : (
+          <TiffinOrderDetails orderData={order as TiffinDocumentPopulate} />
+        )}
+      </Stack>
+    </Box>
   );
 };
 
