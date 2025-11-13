@@ -1,92 +1,169 @@
-'use client';
+"use client";
 
-import type { Dispatch, SetStateAction } from 'react';
-import { toast } from 'sonner';
-import { generateOrderId } from '@/lib/utils';
-import type { CateringDocument } from '@/models/types/catering';
-import { Button } from '../ui/button';
 import {
-  Dialog,
-  DialogContent,
-  DialogFooter,
-  DialogHeader,
-  DialogTitle,
-  DialogTrigger,
-} from '../ui/dialog';
-import { Input } from '../ui/input';
-import { Label } from '../ui/label';
+    type FormEvent,
+    useState,
+    type Dispatch,
+    type SetStateAction,
+} from "react";
+import { generateOrderId } from "@/lib/utils";
+import type { CateringDocument } from "@/models/types/catering";
+import { Button } from "../ui/button";
+import {
+    Dialog,
+    DialogContent,
+    DialogFooter,
+    DialogHeader,
+    DialogTitle,
+    DialogTrigger,
+} from "../ui/dialog";
+import CustomFormContent from "./custom-form-content";
+import { CateringCustomItemState } from "@/lib/types/catering/catering-order-state";
 
 const AddCustomItemDirectDialog = ({
-  children,
-  setCustomItems,
-  enableSaveButton,
+    children,
+    setCustomItems,
+    enableSaveButton,
 }: {
-  children: React.ReactNode;
-  setCustomItems: Dispatch<SetStateAction<CateringDocument['customItems']>>;
-  enableSaveButton: Dispatch<SetStateAction<boolean>>;
+    children: React.ReactNode;
+    setCustomItems: Dispatch<SetStateAction<CateringDocument["customItems"]>>;
+    enableSaveButton: Dispatch<SetStateAction<boolean>>;
 }) => {
-  function handleSubmit(formData: FormData) {
-    const { name, priceAtOrder, size } = Object.fromEntries(formData);
-    if (!(name && priceAtOrder && size)) {
-      toast.error('Invalid data format.');
-      return;
+    const [formData, setFormData] = useState({
+        itemDescription: "",
+        numberOfPersons: "",
+        selectedType: "tray", // 'tray' or 'pieces'
+        traySize: "",
+        numberOfTrays: "",
+        numberOfPieces: "",
+        rate: "",
+    });
+
+    const [errors, setErrors] = useState<Record<string, string>>({});
+
+    const validateForm = () => {
+        const newErrors: Record<string, string> = {};
+
+        if (!formData.itemDescription.trim()) {
+            newErrors.itemDescription = "Item description is required";
+        }
+        if (
+            !formData.numberOfPersons ||
+            Number(formData.numberOfPersons) <= 0
+        ) {
+            newErrors.numberOfPersons =
+                "Number of persons must be greater than 0";
+        }
+
+        if (formData.selectedType === "tray") {
+            if (!formData.traySize) {
+                newErrors.traySize = "Tray size is required";
+            }
+            if (
+                !formData.numberOfTrays ||
+                Number(formData.numberOfTrays) <= 0
+            ) {
+                newErrors.numberOfTrays =
+                    "Number of trays must be greater than 0";
+            }
+        } else {
+            if (
+                !formData.numberOfPieces ||
+                Number(formData.numberOfPieces) <= 0
+            ) {
+                newErrors.numberOfPieces =
+                    "Number of pieces must be greater than 0";
+            }
+        }
+
+        if (!formData.rate || Number(formData.rate) <= 0) {
+            newErrors.rate = "Rate must be greater than 0";
+        }
+
+        setErrors(newErrors);
+        return Object.keys(newErrors).length === 0;
+    };
+
+    function handleSubmit(e: FormEvent) {
+        e.preventDefault();
+
+        if (!validateForm()) {
+            return;
+        }
+
+        const submitData: CateringCustomItemState = {
+            itemDescription: formData.itemDescription,
+            numberOfPersons: Number(formData.numberOfPersons),
+            rate: Number(formData.rate),
+        };
+
+        if (formData.selectedType === "tray") {
+            submitData.traySize = formData.traySize;
+            submitData.numberOfTrays = Number(formData.numberOfTrays);
+        } else {
+            submitData.numberOfPieces = Number(formData.numberOfPieces);
+        }
+
+        setCustomItems((prev) => [
+            ...prev,
+            {
+                _id: generateOrderId(),
+                ...submitData,
+            },
+        ]);
+        setFormData({
+            itemDescription: "",
+            numberOfPersons: "",
+            selectedType: "tray",
+            traySize: "",
+            numberOfTrays: "",
+            numberOfPieces: "",
+            rate: "",
+        });
+
+        enableSaveButton(true);
     }
 
-    setCustomItems((prev) => [
-      ...prev,
-      {
-        _id: generateOrderId(),
-        name: name as string,
-        size: size as string,
-        priceAtOrder: Number(priceAtOrder),
-      },
-    ]);
+    const handleOpenChange = (newOpen: boolean) => {
+        if (!newOpen) {
+            setFormData({
+                itemDescription: "",
+                numberOfPersons: "",
+                selectedType: "tray",
+                traySize: "",
+                numberOfTrays: "",
+                numberOfPieces: "",
+                rate: "",
+            });
+            setErrors({});
+        }
+    };
 
-    enableSaveButton(true);
-  }
-  return (
-    <Dialog>
-      <DialogTrigger asChild>{children}</DialogTrigger>
-      <DialogContent className="sm:max-w-[425px]">
-        <DialogHeader>
-          <DialogTitle>Add custom item</DialogTitle>
-        </DialogHeader>
-        <form
-          action={handleSubmit}
-          className="grid gap-4 py-4"
-          id="add-custom-item-direct-form"
-        >
-          <div className="grid grid-cols-4 items-center gap-2">
-            <Label className="text-right" htmlFor="name">
-              Name
-            </Label>
-            <Input className="col-span-3" name="name" placeholder="Name" />
-          </div>
-          <div className="grid grid-cols-4 items-center gap-2">
-            <Label className="text-right" htmlFor="size">
-              Size
-            </Label>
-            <Input className="col-span-3" name="size" placeholder="5 PPL" />
-          </div>
-          <div className="grid grid-cols-4 items-center gap-2">
-            <Label className="text-right" htmlFor="priceAtOrder">
-              Price
-            </Label>
-            <Input
-              className="col-span-3"
-              name="priceAtOrder"
-              placeholder="$99"
-            />
-          </div>
-        </form>
-        <DialogFooter className="flex justify-end">
-          <Button form="add-custom-item-direct-form" size={'sm'} type="submit">
-            Add
-          </Button>
-        </DialogFooter>
-      </DialogContent>
-    </Dialog>
-  );
+    const rateLabel =
+        formData.selectedType === "tray" ? "Rate per Tray" : "Rate per Piece";
+
+    return (
+        <Dialog>
+            <DialogTrigger asChild>{children}</DialogTrigger>
+            <DialogContent className="sm:max-w-3xl">
+                <DialogHeader>
+                    <DialogTitle>Add custom item</DialogTitle>
+                </DialogHeader>
+                <form
+                    onSubmit={handleSubmit}
+                    className="grid grid-cols-2 gap-5"
+                >
+                    <CustomFormContent
+                        errors={errors}
+                        formData={formData}
+                        handleOpenChange={handleOpenChange}
+                        rateLabel={rateLabel}
+                        setFormData={setFormData}
+                    />
+                </form>
+            </DialogContent>
+        </Dialog>
+    );
 };
 
 export default AddCustomItemDirectDialog;

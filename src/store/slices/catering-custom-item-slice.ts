@@ -10,9 +10,9 @@ export const cateringCustomItemSlice = createSlice({
     addItem: (state, action: PayloadAction<CateringCustomItemState>) => {
       state.push(action.payload);
     },
-    removeCustomItem: (state, action: PayloadAction<{ name: string }>) => {
+    removeCustomItem: (state, action: PayloadAction<{ itemDescription: string }>) => {
       return state.filter(
-        (item) => item.name.toLowerCase() !== action.payload.name.toLowerCase()
+        (item) => item.itemDescription.toLowerCase() !== action.payload.itemDescription.toLowerCase()
       );
     },
     clearCustomItemState: () => {

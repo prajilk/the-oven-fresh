@@ -89,6 +89,7 @@ function calculateEndDate(
 
 function calculateTotalAmount(
   form: UseFormReturn<z.infer<typeof ZodTiffinSchema>>,
+  discountAmount: string,
   tiffinMenu?: TiffinMenuDocument | null
 ) {
   const numberOfWeeks = Number(form.getValues('number_of_weeks'));
@@ -124,8 +125,10 @@ function calculateTotalAmount(
   }
 
   const tax =
-    (subtotal * Number(process.env.NEXT_PUBLIC_TAX_AMOUNT || 0)) / 100;
-  const total = subtotal + tax;
+    ((subtotal - Number(discountAmount)) *
+      Number(process.env.NEXT_PUBLIC_TAX_AMOUNT || 0)) /
+    100;
+  const total = subtotal - Number(discountAmount) + tax;
 
   return { tax, subtotal, total };
 }
@@ -296,6 +299,19 @@ function formatTimezone(date: Date) {
   ).toISOString();
 }
 
+function getTrayTotalAmount(rate: number, nTrays?: number) {
+  if (nTrays) {
+    return nTrays * rate;
+  }
+  return rate;
+}
+function getPieceTotalAmount(rate: number, nPieces?: number) {
+  if (nPieces) {
+    return nPieces * rate;
+  }
+  return rate;
+}
+
 export {
   cn,
   isRestricted,
@@ -313,4 +329,6 @@ export {
   haversine,
   capitalizeName,
   formatTimezone,
+  getTrayTotalAmount,
+  getPieceTotalAmount,
 };

@@ -70,9 +70,12 @@ export const ZodCateringSchema = z.object({
   customItems: z
     .array(
       z.object({
-        name: z.string(),
-        size: z.string(),
-        priceAtOrder: z.number(),
+        itemDescription: z.string(),
+        rate: z.number(),
+        numberOfPersons: z.number(),
+        numberOfPieces: z.number().optional(),
+        numberOfTrays: z.number().optional(),
+        traySize: z.string().optional(),
       })
     )
     .optional(),

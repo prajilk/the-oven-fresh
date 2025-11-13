@@ -67,17 +67,26 @@ const CateringSchema = new Schema<CateringDocument>(
     customItems: {
       type: [
         {
-          name: {
+          itemDescription: {
             type: String,
             required: true,
           },
-          size: {
-            type: String,
-            required: true,
-          },
-          priceAtOrder: {
+          rate: {
             type: Number,
             required: true,
+          },
+          numberOfPersons: {
+            type: Number,
+            required: true,
+          },
+          numberOfPieces: {
+            type: Number,
+          },
+          numberOfTrays: {
+            type: Number,
+          },
+          traySize: {
+            type: String,
           },
         },
       ],

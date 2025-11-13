@@ -35,7 +35,10 @@ export type CateringItemsState = {
 };
 
 export type CateringCustomItemState = {
-  name: string;
-  size: string;
-  priceAtOrder: number;
+  itemDescription: string;
+  numberOfPersons: number;
+  rate: number;
+  numberOfPieces?: number;
+  numberOfTrays?: number;
+  traySize?: string;
 };

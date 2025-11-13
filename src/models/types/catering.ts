@@ -21,9 +21,12 @@ export type CateringDocument = {
     size: string;
   }[];
   customItems: {
-    name: string;
-    size: string;
-    priceAtOrder: number;
+    itemDescription: string;
+    rate: number;
+    numberOfPersons: number;
+    numberOfPieces?: number;
+    numberOfTrays?: number;
+    traySize?: string;
   }[];
   advancePaid: number;
   pendingBalance: number;
