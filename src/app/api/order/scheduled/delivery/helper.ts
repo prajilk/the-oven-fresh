@@ -62,6 +62,14 @@ const groupByZone = (
     for (const item of data) {
         const point = getCoords(item);
         const side = getSideOfLine(divider.start, divider.end, point);
+        if (item.trip === 1) {
+            zone1.push(item as TiffinInputProps & CateringInputProps);
+            continue;
+        }
+        if (item.trip === 2) {
+            zone2.push(item as TiffinInputProps & CateringInputProps);
+            continue;
+        }
         if (side === "up") {
             zone1.push(item as TiffinInputProps & CateringInputProps);
         } else if (side === "down") {
