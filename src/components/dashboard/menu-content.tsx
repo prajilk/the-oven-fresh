@@ -9,6 +9,7 @@ import PaidIcon from '@mui/icons-material/Paid';
 import PeopleIcon from '@mui/icons-material/People';
 import StoreIcon from '@mui/icons-material/Store';
 import TravelExploreRoundedIcon from '@mui/icons-material/TravelExploreRounded';
+import WarehouseRoundedIcon from '@mui/icons-material/WarehouseRounded';
 import List from '@mui/material/List';
 import ListItem from '@mui/material/ListItem';
 import ListItemButton from '@mui/material/ListItemButton';
@@ -76,6 +77,11 @@ const mainListItems = [
     icon: <ImageIcon />,
     href: '/dashboard/delivery-proof',
   },
+  {
+    text: 'Supplier',
+    icon: <WarehouseRoundedIcon />,
+    href: '/dashboard/supplier',
+  }
 ];
 
 // List of items that should be visible only to admins

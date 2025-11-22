@@ -1,4 +1,4 @@
-import { format } from "date-fns";
+import { addDays, format } from "date-fns";
 import type { Model } from "mongoose";
 import { error403, error500, success200 } from "@/lib/response";
 import type { AuthenticatedRequest } from "@/lib/types/auth-request";
@@ -20,6 +20,8 @@ async function getHandler(req: AuthenticatedRequest) {
         }
 
         const today = format(new Date(), "yyyy-MM-dd");
+        const tomorrow = format(addDays(new Date(), 1), "yyyy-MM-dd");
+        const dayAfter = format(addDays(new Date(), 2), "yyyy-MM-dd");
 
         // Helper function to count documents
         const countDocuments = async <T extends Document>(
@@ -31,46 +33,65 @@ async function getHandler(req: AuthenticatedRequest) {
 
         // Run all queries in parallel
         const [
-            pendingTiffin,
-            deliveredTiffin,
-            pendingCatering,
-            deliveredCatering,
+            pendingTiffinToday,
+            pendingCateringToday,
+            pendingTiffinTomorrow,
+            pendingCateringTomorrow,
+            pendingTiffinDayAfter,
+            pendingCateringDayAfter,
         ] = await Promise.all([
             countDocuments(TiffinOrderStatus, {
                 store: storeId,
                 date: today,
                 status: "PENDING",
             }),
-            countDocuments(TiffinOrderStatus, {
-                store: storeId,
-                date: today,
-                status: "DELIVERED",
-            }),
             countDocuments(Catering, {
                 store: storeId,
                 deliveryDateLocal: today,
                 status: "PENDING",
             }),
+            countDocuments(TiffinOrderStatus, {
+                store: storeId,
+                date: tomorrow,
+                status: "PENDING",
+            }),
             countDocuments(Catering, {
                 store: storeId,
-                deliveryDateLocal: today,
-                status: "DELIVERED",
+                deliveryDateLocal: tomorrow,
+                status: "PENDING",
+            }),
+            countDocuments(TiffinOrderStatus, {
+                store: storeId,
+                date: dayAfter,
+                status: "PENDING",
+            }),
+            countDocuments(Catering, {
+                store: storeId,
+                deliveryDateLocal: dayAfter,
+                status: "PENDING",
             }),
         ]);
 
-        const tiffinStatCounts = {
-            total: pendingTiffin + deliveredTiffin,
-            pending: pendingTiffin,
-            delivered: deliveredTiffin,
+        const todayStats = {
+            tiffin: pendingTiffinToday,
+            catering: pendingCateringToday,
+        };
+        const tomorrowStats = {
+            tiffin: pendingTiffinTomorrow,
+            catering: pendingCateringTomorrow,
+        };
+        const dayAfterStats = {
+            tiffin: pendingTiffinDayAfter,
+            catering: pendingCateringDayAfter,
         };
 
-        const cateringStatCounts = {
-            total: pendingCatering + deliveredCatering,
-            pending: pendingCatering,
-            delivered: deliveredCatering,
-        };
-
-        return success200({ data: { tiffinStatCounts, cateringStatCounts } });
+        return success200({
+            data: {
+                today: todayStats,
+                tomorrow: tomorrowStats,
+                dayAfter: dayAfterStats,
+            },
+        });
     } catch (error) {
         if (error instanceof Error) {
             return error500({ error: error.message });

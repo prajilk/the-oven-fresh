@@ -1,6 +1,6 @@
 import Box from '@mui/material/Box';
 import CssBaseline from '@mui/material/CssBaseline';
-import type * as React from 'react';
+import type { ReactNode } from "react";
 import AppNavbar from '@/components/dashboard/app-navbar';
 import SideMenu from '@/components/dashboard/sidemenu';
 import ErrorComponent from '@/components/error';
@@ -13,7 +13,7 @@ export default async function DashboardLayout({
   children,
   disableCustomTheme,
 }: {
-  children: React.ReactNode;
+  children: ReactNode;
   disableCustomTheme?: boolean;
 }) {
   const user = await getCurrentUser();

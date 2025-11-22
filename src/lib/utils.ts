@@ -1,334 +1,340 @@
-import { type ClassValue, clsx } from 'clsx';
-import { fromZonedTime } from 'date-fns-tz';
-import { customAlphabet } from 'nanoid';
-import type { UseFormReturn } from 'react-hook-form';
-import { twMerge } from 'tailwind-merge';
-import type { z } from 'zod';
-import type { TiffinMenuDocument } from '@/models/types/tiffin-menu';
-import type { RolesSet } from './type';
-import type { AuthenticatedRequest } from './types/auth-request';
-import type { CateringInputProps, TiffinInputProps } from './types/delivery';
-import type { ZodTiffinSchema } from './zod-schema/schema';
+import { type ClassValue, clsx } from "clsx";
+import { fromZonedTime } from "date-fns-tz";
+import { customAlphabet } from "nanoid";
+import type { UseFormReturn } from "react-hook-form";
+import { twMerge } from "tailwind-merge";
+import type { z } from "zod";
+import type { TiffinMenuDocument } from "@/models/types/tiffin-menu";
+import type { RolesSet } from "./type";
+import type { AuthenticatedRequest } from "./types/auth-request";
+import type { CateringInputProps, TiffinInputProps } from "./types/delivery";
+import type { ZodTiffinSchema } from "./zod-schema/schema";
 
 function cn(...inputs: ClassValue[]) {
-  return twMerge(clsx(inputs));
+    return twMerge(clsx(inputs));
 }
 
 function isRestricted(
-  user: AuthenticatedRequest['user'],
-  allow: RolesSet[] = ['admin']
+    user: AuthenticatedRequest["user"],
+    allow: RolesSet[] = ["admin"]
 ) {
-  // If the user's role is "admin", always return false (no restriction)
-  if (user?.role === 'admin') {
-    return false;
-  }
+    // If the user's role is "admin", always return false (no restriction)
+    if (user?.role === "admin") {
+        return false;
+    }
 
-  // If a user is not in the allowedRoles, they are restricted
-  return !allow.includes(user?.role as RolesSet);
+    // If a user is not in the allowedRoles, they are restricted
+    return !allow.includes(user?.role as RolesSet);
 }
 
 const dayRegex = /\d+/;
 function formatDate(date: Date) {
-  // Format the date in "Month Day, Year" with proper suffix for the day
-  const formattedDate = date.toLocaleDateString('en-US', {
-    year: 'numeric',
-    month: 'long',
-    day: 'numeric',
-  });
+    // Format the date in "Month Day, Year" with proper suffix for the day
+    const formattedDate = date.toLocaleDateString("en-US", {
+        year: "numeric",
+        month: "long",
+        day: "numeric",
+    });
 
-  // Function to add ordinal suffix (st, nd, rd, th)
-  function addOrdinalSuffix(dayInput: number) {
-    if (dayInput >= 11 && dayInput <= 13) {
-      return `${dayInput}th`;
-    } // Special case for 11th, 12th, 13th
-    switch (dayInput % 10) {
-      case 1:
-        return `${dayInput}st`;
-      case 2:
-        return `${dayInput}nd`;
-      case 3:
-        return `${dayInput}rd`;
-      default:
-        return `${dayInput}th`;
+    // Function to add ordinal suffix (st, nd, rd, th)
+    function addOrdinalSuffix(dayInput: number) {
+        if (dayInput >= 11 && dayInput <= 13) {
+            return `${dayInput}th`;
+        } // Special case for 11th, 12th, 13th
+        switch (dayInput % 10) {
+            case 1:
+                return `${dayInput}st`;
+            case 2:
+                return `${dayInput}nd`;
+            case 3:
+                return `${dayInput}rd`;
+            default:
+                return `${dayInput}th`;
+        }
     }
-  }
 
-  // Extract the day and replace it with the ordinal format
-  const day = date.getDate();
-  return formattedDate.replace(dayRegex, addOrdinalSuffix(day));
+    // Extract the day and replace it with the ordinal format
+    const day = date.getDate();
+    return formattedDate.replace(dayRegex, addOrdinalSuffix(day));
 }
 
 function calculateEndDate(
-  weeks: string,
-  form: UseFormReturn<z.infer<typeof ZodTiffinSchema>>,
-  setEndDateText: React.Dispatch<React.SetStateAction<string>>
+    weeks: string,
+    form: UseFormReturn<z.infer<typeof ZodTiffinSchema>>,
+    setEndDateText: React.Dispatch<React.SetStateAction<string>>
 ) {
-  const start = new Date(form.getValues('start_date'));
-  const weeksNumber = Number.parseFloat(weeks);
+    const start = new Date(form.getValues("start_date"));
+    const weeksNumber = Number.parseFloat(weeks);
 
-  if (Number.isNaN(weeksNumber)) {
-    return;
-  }
-
-  let daysToAdd = weeksNumber * 5 - 1; // Include the start date as Day 1
-
-  while (daysToAdd > 0) {
-    start.setDate(start.getDate() + 1); // Move forward one day
-    if (start.getDay() !== 6 && start.getDay() !== 0) {
-      // Skip Sat & Sun
-      daysToAdd--; // Count only business days
+    if (Number.isNaN(weeksNumber)) {
+        return;
     }
-  }
 
-  const endDate = new Date(start);
-  const formattedDate = formatDate(endDate);
-  form.setValue('end_date', endDate.toDateString());
+    let daysToAdd = weeksNumber * 5 - 1; // Include the start date as Day 1
 
-  setEndDateText(`End date: ${formattedDate}`);
+    while (daysToAdd > 0) {
+        start.setDate(start.getDate() + 1); // Move forward one day
+        if (start.getDay() !== 6 && start.getDay() !== 0) {
+            // Skip Sat & Sun
+            daysToAdd--; // Count only business days
+        }
+    }
+
+    const endDate = new Date(start);
+    const formattedDate = formatDate(endDate);
+    form.setValue("end_date", endDate.toDateString());
+
+    setEndDateText(`End date: ${formattedDate}`);
 }
 
 function calculateTotalAmount(
-  form: UseFormReturn<z.infer<typeof ZodTiffinSchema>>,
-  discountAmount: string,
-  tiffinMenu?: TiffinMenuDocument | null
+    form: UseFormReturn<z.infer<typeof ZodTiffinSchema>>,
+    discountAmount: string,
+    tiffinMenu?: TiffinMenuDocument | null
 ) {
-  const numberOfWeeks = Number(form.getValues('number_of_weeks'));
-  const deliveryType = form.getValues('order_type');
+    const numberOfWeeks = Number(form.getValues("number_of_weeks"));
+    const deliveryType = form.getValues("order_type");
 
-  let subtotal = 0;
+    let subtotal = 0;
 
-  switch (numberOfWeeks) {
-    case 2:
-      if (deliveryType === 'pickup') {
-        subtotal = tiffinMenu?.pickup['2_weeks'] || 0;
-      } else {
-        subtotal = tiffinMenu?.delivery['2_weeks'] || 0;
-      }
-      break;
-    case 3:
-      if (deliveryType === 'pickup') {
-        subtotal = tiffinMenu?.pickup['3_weeks'] || 0;
-      } else {
-        subtotal = tiffinMenu?.delivery['3_weeks'] || 0;
-      }
-      break;
-    case 4:
-      if (deliveryType === 'pickup') {
-        subtotal = tiffinMenu?.pickup['4_weeks'] || 0;
-      } else {
-        subtotal = tiffinMenu?.delivery['4_weeks'] || 0;
-      }
-      break;
+    switch (numberOfWeeks) {
+        case 2:
+            if (deliveryType === "pickup") {
+                subtotal = tiffinMenu?.pickup["2_weeks"] || 0;
+            } else {
+                subtotal = tiffinMenu?.delivery["2_weeks"] || 0;
+            }
+            break;
+        case 3:
+            if (deliveryType === "pickup") {
+                subtotal = tiffinMenu?.pickup["3_weeks"] || 0;
+            } else {
+                subtotal = tiffinMenu?.delivery["3_weeks"] || 0;
+            }
+            break;
+        case 4:
+            if (deliveryType === "pickup") {
+                subtotal = tiffinMenu?.pickup["4_weeks"] || 0;
+            } else {
+                subtotal = tiffinMenu?.delivery["4_weeks"] || 0;
+            }
+            break;
 
-    default:
-      break;
-  }
+        default:
+            break;
+    }
 
-  const tax =
-    ((subtotal - Number(discountAmount)) *
-      Number(process.env.NEXT_PUBLIC_TAX_AMOUNT || 0)) /
-    100;
-  const total = subtotal - Number(discountAmount) + tax;
+    const tax =
+        ((subtotal - Number(discountAmount)) *
+            Number(process.env.NEXT_PUBLIC_TAX_AMOUNT || 0)) /
+        100;
+    const total = subtotal - Number(discountAmount) + tax;
 
-  return { tax, subtotal, total };
+    return { tax, subtotal, total };
 }
 
 // Define an uppercase alphanumeric nanoid generator (A-Z, 0-9)
-const nanoid = customAlphabet('ABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789', 6);
+const nanoid = customAlphabet("ABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789", 6);
 
 // Function to generate an order ID
 function generateOrderId() {
-  const year = new Date().getFullYear(); // Get current year
-  const uniquePart = nanoid(); // Generate a 6-character unique ID
-  return `${year}-${uniquePart}`; // Example: "2025-9GHT3X"
+    const year = new Date().getFullYear(); // Get current year
+    const uniquePart = nanoid(); // Generate a 6-character unique ID
+    return `${year}-${uniquePart}`; // Example: "2025-9GHT3X"
 }
 
 function haversine(lat1: number, lon1: number, lat2: number, lon2: number) {
-  const R = 6371; // Earth radius in km
-  const toRad = (deg: number) => deg * (Math.PI / 180);
-  const dLat = toRad(lat2 - lat1);
-  const dLon = toRad(lon2 - lon1);
-  const a =
-    Math.sin(dLat / 2) ** 2 +
-    Math.cos(toRad(lat1)) * Math.cos(toRad(lat2)) * Math.sin(dLon / 2) ** 2;
-  const c = 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1 - a));
-  return R * c;
+    const R = 6371; // Earth radius in km
+    const toRad = (deg: number) => deg * (Math.PI / 180);
+    const dLat = toRad(lat2 - lat1);
+    const dLon = toRad(lon2 - lon1);
+    const a =
+        Math.sin(dLat / 2) ** 2 +
+        Math.cos(toRad(lat1)) * Math.cos(toRad(lat2)) * Math.sin(dLon / 2) ** 2;
+    const c = 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1 - a));
+    return R * c;
 }
 
 function findOptimalRoute(
-  store: { lat: number; lng: number },
-  orders: TiffinInputProps[] | CateringInputProps[]
+    store: { lat: number; lng: number },
+    orders: TiffinInputProps[] | CateringInputProps[]
 ) {
-  const unvisited = [...orders];
-  const route: (TiffinInputProps | CateringInputProps)[] = [];
-  let current = {
-    lat: store.lat,
-    lng: store.lng,
-  };
+    const unvisited = [...orders];
+    const route: (TiffinInputProps | CateringInputProps)[] = [];
+    let current = {
+        lat: store.lat,
+        lng: store.lng,
+    };
 
-  while (unvisited.length) {
-    unvisited.sort(
-      (a, b) =>
-        haversine(current.lat, current.lng, a.lat, a.lng) -
-        haversine(current.lat, current.lng, b.lat, b.lng)
-    );
-    const next = unvisited.shift();
-    route.push(next as TiffinInputProps | CateringInputProps);
-    current = next as TiffinInputProps | CateringInputProps;
-  }
+    while (unvisited.length) {
+        unvisited.sort(
+            (a, b) =>
+                haversine(current.lat, current.lng, a.lat, a.lng) -
+                haversine(current.lat, current.lng, b.lat, b.lng)
+        );
+        const next = unvisited.shift();
+        route.push(next as TiffinInputProps | CateringInputProps);
+        current = next as TiffinInputProps | CateringInputProps;
+    }
 
-  return route as (TiffinInputProps | CateringInputProps)[];
+    return route as (TiffinInputProps | CateringInputProps)[];
 }
 
 const getMonthsUpToCurrent = (
-  removeAllMonth = false,
-  year?: number
+    removeAllMonth = false,
+    year?: number
 ): { value: string; name: string }[] => {
-  const currentYear = new Date().getFullYear(); // Get the current year
-  const currentMonth = new Date().getMonth(); // Get the current month (0-based index)
+    const currentYear = new Date().getFullYear(); // Get the current year
+    const currentMonth = new Date().getMonth(); // Get the current month (0-based index)
 
-  // If a year is provided, use that year, otherwise, use the current year
-  const targetYear = year || currentYear;
+    // If a year is provided, use that year, otherwise, use the current year
+    const targetYear = year || currentYear;
 
-  // Define months array
-  const months = [
-    { value: 'all', name: 'All Months' },
-    { value: 'jan', name: 'January' },
-    { value: 'feb', name: 'February' },
-    { value: 'mar', name: 'March' },
-    { value: 'apr', name: 'April' },
-    { value: 'may', name: 'May' },
-    { value: 'jun', name: 'June' },
-    { value: 'jul', name: 'July' },
-    { value: 'aug', name: 'August' },
-    { value: 'sep', name: 'September' },
-    { value: 'oct', name: 'October' },
-    { value: 'nov', name: 'November' },
-    { value: 'dec', name: 'December' },
-  ];
+    // Define months array
+    const months = [
+        { value: "all", name: "All Months" },
+        { value: "jan", name: "January" },
+        { value: "feb", name: "February" },
+        { value: "mar", name: "March" },
+        { value: "apr", name: "April" },
+        { value: "may", name: "May" },
+        { value: "jun", name: "June" },
+        { value: "jul", name: "July" },
+        { value: "aug", name: "August" },
+        { value: "sep", name: "September" },
+        { value: "oct", name: "October" },
+        { value: "nov", name: "November" },
+        { value: "dec", name: "December" },
+    ];
 
-  // If the given year is the current year, return months up to the current month
-  if (targetYear === currentYear) {
-    if (removeAllMonth) {
-      return months.slice(1, currentMonth + 2); // Exclude "All Months" and return up to the current month
+    // If the given year is the current year, return months up to the current month
+    if (targetYear === currentYear) {
+        if (removeAllMonth) {
+            return months.slice(1, currentMonth + 2); // Exclude "All Months" and return up to the current month
+        }
+        return months.slice(0, currentMonth + 2); // Include "All Months" and return up to the current month
     }
-    return months.slice(0, currentMonth + 2); // Include "All Months" and return up to the current month
-  }
 
-  // If the given year is not the current year, return all months for that year
-  if (removeAllMonth) {
-    return months.slice(1); // Exclude "All Months" and return all months from January to December
-  }
-  return months; // Include "All Months" and return all months from January to December
+    // If the given year is not the current year, return all months for that year
+    if (removeAllMonth) {
+        return months.slice(1); // Exclude "All Months" and return all months from January to December
+    }
+    return months; // Include "All Months" and return all months from January to December
 };
 
 function getYearsUpToCurrent(): number[] {
-  const currentYear = new Date().getFullYear();
+    const currentYear = new Date().getFullYear();
 
-  const years: number[] = [];
+    const years: number[] = [];
 
-  for (let year = 2025; year <= currentYear; year++) {
-    years.push(year);
-  }
+    for (let year = 2025; year <= currentYear; year++) {
+        years.push(year);
+    }
 
-  return years;
+    return years;
 }
 
 function appendBracket(str1: string, str2?: string | null, isMoney = false) {
-  if (str2 && str2.length > 0) {
-    if (isMoney) {
-      return `$${str1} (${str2})`;
+    if (str2 && str2.length > 0) {
+        if (isMoney) {
+            return `$${str1} (${str2})`;
+        }
+        return `${str1} (${str2})`;
     }
-    return `${str1} (${str2})`;
-  }
-  return isMoney ? `$${str1}` : str1;
+    return isMoney ? `$${str1}` : str1;
 }
 
 // Helper function to calculate percentage change
 const calculatePercentageChange = (current: number, previous: number) => {
-  if (previous === 0) {
-    return current > 0 ? 100 : 0;
-  } // if previous month was 0, handle it as a 100% change if current > 0
-  return ((current - previous) / previous) * 100;
+    if (previous === 0) {
+        return current > 0 ? 100 : 0;
+    } // if previous month was 0, handle it as a 100% change if current > 0
+    return ((current - previous) / previous) * 100;
 };
 
 function getMonthInNumber(month: string) {
-  const monthMap: Record<string, number> = {
-    jan: 1,
-    feb: 2,
-    mar: 3,
-    apr: 4,
-    may: 5,
-    jun: 6,
-    jul: 7,
-    aug: 8,
-    sep: 9,
-    oct: 10,
-    nov: 11,
-    dec: 12,
-  };
-  return monthMap[month];
+    const monthMap: Record<string, number> = {
+        jan: 1,
+        feb: 2,
+        mar: 3,
+        apr: 4,
+        may: 5,
+        jun: 6,
+        jul: 7,
+        aug: 8,
+        sep: 9,
+        oct: 10,
+        nov: 11,
+        dec: 12,
+    };
+    return monthMap[month];
 }
 
 function addWeekdays(startDate: string, numberOfWeeks: number) {
-  const start = new Date(startDate);
-  const totalWeekdays = numberOfWeeks * 5;
-  let addedDays = 1; // We count the start date as day 1
-  const current = new Date(start);
+    const start = new Date(startDate);
+    const totalWeekdays = numberOfWeeks * 5;
+    let addedDays = 1; // We count the start date as day 1
+    const current = new Date(start);
 
-  while (addedDays < totalWeekdays) {
-    current.setDate(current.getDate() + 1);
-    const day = current.getDay();
-    if (day !== 0 && day !== 6) {
-      addedDays++;
+    while (addedDays < totalWeekdays) {
+        current.setDate(current.getDate() + 1);
+        const day = current.getDay();
+        if (day !== 0 && day !== 6) {
+            addedDays++;
+        }
     }
-  }
 
-  return current;
+    return current;
 }
 
 /** Capitalize username for display */
-function capitalizeName(name = ''): string {
-  return name ? name[0].toUpperCase() + name.slice(1) : 'N/A';
+function capitalizeName(name = ""): string {
+    return name ? name[0].toUpperCase() + name.slice(1) : "N/A";
 }
 
 function formatTimezone(date: Date) {
-  return fromZonedTime(
-    date.toISOString().split('T')[0],
-    'America/Toronto'
-  ).toISOString();
+    return fromZonedTime(
+        date.toISOString().split("T")[0],
+        "America/Toronto"
+    ).toISOString();
 }
 
 function getTrayTotalAmount(rate: number, nTrays?: number) {
-  if (nTrays) {
-    return nTrays * rate;
-  }
-  return rate;
+    if (nTrays) {
+        return nTrays * rate;
+    }
+    return rate;
 }
 function getPieceTotalAmount(rate: number, nPieces?: number) {
-  if (nPieces) {
-    return nPieces * rate;
-  }
-  return rate;
+    if (nPieces) {
+        return nPieces * rate;
+    }
+    return rate;
+}
+
+// Function for validation of date format
+function isValidDate(stringDate: string) {
+    return !Number.isNaN(Date.parse(stringDate));
 }
 
 export {
-  cn,
-  isRestricted,
-  formatDate,
-  calculateEndDate,
-  calculateTotalAmount,
-  generateOrderId,
-  findOptimalRoute,
-  getMonthsUpToCurrent,
-  appendBracket,
-  calculatePercentageChange,
-  getMonthInNumber,
-  getYearsUpToCurrent,
-  addWeekdays,
-  haversine,
-  capitalizeName,
-  formatTimezone,
-  getTrayTotalAmount,
-  getPieceTotalAmount,
+    cn,
+    isRestricted,
+    formatDate,
+    calculateEndDate,
+    calculateTotalAmount,
+    generateOrderId,
+    findOptimalRoute,
+    getMonthsUpToCurrent,
+    appendBracket,
+    calculatePercentageChange,
+    getMonthInNumber,
+    getYearsUpToCurrent,
+    addWeekdays,
+    haversine,
+    capitalizeName,
+    formatTimezone,
+    getTrayTotalAmount,
+    getPieceTotalAmount,
+    isValidDate,
 };
