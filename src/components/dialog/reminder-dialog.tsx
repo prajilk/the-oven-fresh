@@ -18,6 +18,7 @@ import {
 import { useOrderReminder } from "@/api-hooks/order-reminder";
 import { Skeleton } from "../ui/skeleton";
 import { Show } from "../show";
+import { ScrollArea } from "../ui/scroll-area";
 
 const today = new Date();
 
@@ -70,211 +71,228 @@ const ReminderDialog = () => {
                 <Show>
                     <Show.When isTrue={!isError}>
                         {/* Overview Section */}
-                        <div className="grid grid-cols-3 gap-3">
-                            {/* Today */}
-                            <div className="rounded-lg border border-border bg-card p-4">
-                                <div className="mb-3 font-semibold text-muted-foreground text-sm">
-                                    Today
-                                </div>
-                                <div className="space-y-2">
-                                    <div className="flex items-center justify-between">
-                                        <Show>
-                                            <Show.When isTrue={isPending}>
-                                                <Skeleton className="h-5 w-20 rounded-md" />
-                                                <Skeleton className="h-5 w-10 rounded-md" />
-                                            </Show.When>
-                                            <Show.Else>
-                                                <span className="text-sm">
-                                                    Tiffins:
-                                                </span>
-                                                <span className="font-bold text-lg text-primary">
-                                                    {data?.today.tiffin}
-                                                </span>
-                                            </Show.Else>
-                                        </Show>
+                        <ScrollArea className="max-h-[400px]">
+                            <div className="grid gap-3 md:grid-cols-3">
+                                {/* Today */}
+                                <div className="rounded-lg border border-border bg-card p-4">
+                                    <div className="mb-3 font-semibold text-muted-foreground text-sm">
+                                        Today
                                     </div>
-                                    <div className="flex items-center justify-between">
-                                        <Show>
-                                            <Show.When isTrue={isPending}>
-                                                <Skeleton className="h-5 w-24 rounded-md" />
-                                                <Skeleton className="h-5 w-10 rounded-md" />
-                                            </Show.When>
-                                            <Show.Else>
-                                                <span className="text-sm">
-                                                    Catering:
-                                                </span>
-                                                <span className="font-bold text-lg text-primary">
-                                                    {data?.today.catering}
-                                                </span>
-                                            </Show.Else>
-                                        </Show>
-                                    </div>
-                                    <div className="border-border border-t pt-2">
+                                    <div className="space-y-2">
                                         <div className="flex items-center justify-between">
                                             <Show>
                                                 <Show.When isTrue={isPending}>
-                                                    <Skeleton className="h-6 w-20 rounded-md" />
+                                                    <Skeleton className="h-5 w-20 rounded-md" />
                                                     <Skeleton className="h-5 w-10 rounded-md" />
                                                 </Show.When>
                                                 <Show.Else>
-                                                    <span className="font-semibold text-sm">
-                                                        Total:
+                                                    <span className="text-sm">
+                                                        Tiffins:
                                                     </span>
-                                                    <span className="font-bold text-lg">
-                                                        {(data?.today.tiffin ||
-                                                            0) +
-                                                            (data?.today
-                                                                .catering || 0)}
+                                                    <span className="font-bold text-lg text-primary">
+                                                        {data?.today.tiffin}
                                                     </span>
                                                 </Show.Else>
                                             </Show>
                                         </div>
-                                    </div>
-                                </div>
-                            </div>
-
-                            {/* Tomorrow */}
-                            <div className="rounded-lg border border-border bg-card p-4">
-                                <div className="mb-3 font-semibold text-muted-foreground text-sm">
-                                    Tomorrow
-                                </div>
-                                <div className="space-y-2">
-                                    <div className="flex items-center justify-between">
-                                        <Show>
-                                            <Show.When isTrue={isPending}>
-                                                <Skeleton className="h-5 w-20 rounded-md" />
-                                                <Skeleton className="h-5 w-10 rounded-md" />
-                                            </Show.When>
-                                            <Show.Else>
-                                                <span className="text-sm">
-                                                    Tiffins:
-                                                </span>
-                                                <span className="font-bold text-lg text-primary">
-                                                    {data?.tomorrow.tiffin}
-                                                </span>
-                                            </Show.Else>
-                                        </Show>
-                                    </div>
-                                    <div className="flex items-center justify-between">
-                                        <Show>
-                                            <Show.When isTrue={isPending}>
-                                                <Skeleton className="h-5 w-24 rounded-md" />
-                                                <Skeleton className="h-5 w-10 rounded-md" />
-                                            </Show.When>
-                                            <Show.Else>
-                                                <span className="text-sm">
-                                                    Catering:
-                                                </span>
-                                                <span className="font-bold text-lg text-primary">
-                                                    {data?.tomorrow.catering}
-                                                </span>
-                                            </Show.Else>
-                                        </Show>
-                                    </div>
-                                    <div className="border-border border-t pt-2">
                                         <div className="flex items-center justify-between">
                                             <Show>
                                                 <Show.When isTrue={isPending}>
-                                                    <Skeleton className="h-6 w-20 rounded-md" />
+                                                    <Skeleton className="h-5 w-24 rounded-md" />
                                                     <Skeleton className="h-5 w-10 rounded-md" />
                                                 </Show.When>
                                                 <Show.Else>
-                                                    <span className="font-semibold text-sm">
-                                                        Total:
+                                                    <span className="text-sm">
+                                                        Catering:
                                                     </span>
-                                                    <span className="font-bold text-lg">
-                                                        {(data?.tomorrow
-                                                            .tiffin || 0) +
-                                                            (data?.tomorrow
-                                                                .catering || 0)}
+                                                    <span className="font-bold text-lg text-primary">
+                                                        {data?.today.catering}
                                                     </span>
                                                 </Show.Else>
                                             </Show>
                                         </div>
+                                        <div className="border-border border-t pt-2">
+                                            <div className="flex items-center justify-between">
+                                                <Show>
+                                                    <Show.When
+                                                        isTrue={isPending}
+                                                    >
+                                                        <Skeleton className="h-6 w-20 rounded-md" />
+                                                        <Skeleton className="h-5 w-10 rounded-md" />
+                                                    </Show.When>
+                                                    <Show.Else>
+                                                        <span className="font-semibold text-sm">
+                                                            Total:
+                                                        </span>
+                                                        <span className="font-bold text-lg">
+                                                            {(data?.today
+                                                                .tiffin || 0) +
+                                                                (data?.today
+                                                                    .catering ||
+                                                                    0)}
+                                                        </span>
+                                                    </Show.Else>
+                                                </Show>
+                                            </div>
+                                        </div>
                                     </div>
                                 </div>
-                            </div>
 
-                            {/* Day After Tomorrow */}
-                            <div className="rounded-lg border border-border bg-card p-4">
-                                <div className="mb-3 font-semibold text-muted-foreground text-sm">
-                                    Day After
-                                </div>
-                                <div className="space-y-2">
-                                    <div className="flex items-center justify-between">
-                                        <Show>
-                                            <Show.When isTrue={isPending}>
-                                                <Skeleton className="h-5 w-20 rounded-md" />
-                                                <Skeleton className="h-5 w-10 rounded-md" />
-                                            </Show.When>
-                                            <Show.Else>
-                                                <span className="text-sm">
-                                                    Tiffins:
-                                                </span>
-                                                <span className="font-bold text-lg text-primary">
-                                                    {data?.dayAfter.tiffin}
-                                                </span>
-                                            </Show.Else>
-                                        </Show>
+                                {/* Tomorrow */}
+                                <div className="rounded-lg border border-border bg-card p-4">
+                                    <div className="mb-3 font-semibold text-muted-foreground text-sm">
+                                        Tomorrow
                                     </div>
-                                    <div className="flex items-center justify-between">
-                                        <Show>
-                                            <Show.When isTrue={isPending}>
-                                                <Skeleton className="h-5 w-24 rounded-md" />
-                                                <Skeleton className="h-5 w-10 rounded-md" />
-                                            </Show.When>
-                                            <Show.Else>
-                                                <span className="text-sm">
-                                                    Catering:
-                                                </span>
-                                                <span className="font-bold text-lg text-primary">
-                                                    {data?.dayAfter.catering}
-                                                </span>
-                                            </Show.Else>
-                                        </Show>
-                                    </div>
-                                    <div className="border-border border-t pt-2">
+                                    <div className="space-y-2">
                                         <div className="flex items-center justify-between">
                                             <Show>
                                                 <Show.When isTrue={isPending}>
-                                                    <Skeleton className="h-6 w-20 rounded-md" />
+                                                    <Skeleton className="h-5 w-20 rounded-md" />
                                                     <Skeleton className="h-5 w-10 rounded-md" />
                                                 </Show.When>
                                                 <Show.Else>
-                                                    <span className="font-semibold text-sm">
-                                                        Total:
+                                                    <span className="text-sm">
+                                                        Tiffins:
                                                     </span>
-                                                    <span className="font-bold text-lg">
-                                                        {(data?.dayAfter
-                                                            .tiffin || 0) +
-                                                            (data?.dayAfter
-                                                                .catering || 0)}
+                                                    <span className="font-bold text-lg text-primary">
+                                                        {data?.tomorrow.tiffin}
                                                     </span>
                                                 </Show.Else>
                                             </Show>
                                         </div>
+                                        <div className="flex items-center justify-between">
+                                            <Show>
+                                                <Show.When isTrue={isPending}>
+                                                    <Skeleton className="h-5 w-24 rounded-md" />
+                                                    <Skeleton className="h-5 w-10 rounded-md" />
+                                                </Show.When>
+                                                <Show.Else>
+                                                    <span className="text-sm">
+                                                        Catering:
+                                                    </span>
+                                                    <span className="font-bold text-lg text-primary">
+                                                        {
+                                                            data?.tomorrow
+                                                                .catering
+                                                        }
+                                                    </span>
+                                                </Show.Else>
+                                            </Show>
+                                        </div>
+                                        <div className="border-border border-t pt-2">
+                                            <div className="flex items-center justify-between">
+                                                <Show>
+                                                    <Show.When
+                                                        isTrue={isPending}
+                                                    >
+                                                        <Skeleton className="h-6 w-20 rounded-md" />
+                                                        <Skeleton className="h-5 w-10 rounded-md" />
+                                                    </Show.When>
+                                                    <Show.Else>
+                                                        <span className="font-semibold text-sm">
+                                                            Total:
+                                                        </span>
+                                                        <span className="font-bold text-lg">
+                                                            {(data?.tomorrow
+                                                                .tiffin || 0) +
+                                                                (data?.tomorrow
+                                                                    .catering ||
+                                                                    0)}
+                                                        </span>
+                                                    </Show.Else>
+                                                </Show>
+                                            </div>
+                                        </div>
                                     </div>
                                 </div>
-                            </div>
 
-                            {links.map(({ label, date }) => (
-                                <Link
-                                    className="w-full"
-                                    href={`/dashboard/scheduled?date=${format(
-                                        date,
-                                        "MM-dd-yyyy"
-                                    )}`}
-                                    key={label}
-                                >
-                                    <Button
+                                {/* Day After Tomorrow */}
+                                <div className="rounded-lg border border-border bg-card p-4">
+                                    <div className="mb-3 font-semibold text-muted-foreground text-sm">
+                                        Day After
+                                    </div>
+                                    <div className="space-y-2">
+                                        <div className="flex items-center justify-between">
+                                            <Show>
+                                                <Show.When isTrue={isPending}>
+                                                    <Skeleton className="h-5 w-20 rounded-md" />
+                                                    <Skeleton className="h-5 w-10 rounded-md" />
+                                                </Show.When>
+                                                <Show.Else>
+                                                    <span className="text-sm">
+                                                        Tiffins:
+                                                    </span>
+                                                    <span className="font-bold text-lg text-primary">
+                                                        {data?.dayAfter.tiffin}
+                                                    </span>
+                                                </Show.Else>
+                                            </Show>
+                                        </div>
+                                        <div className="flex items-center justify-between">
+                                            <Show>
+                                                <Show.When isTrue={isPending}>
+                                                    <Skeleton className="h-5 w-24 rounded-md" />
+                                                    <Skeleton className="h-5 w-10 rounded-md" />
+                                                </Show.When>
+                                                <Show.Else>
+                                                    <span className="text-sm">
+                                                        Catering:
+                                                    </span>
+                                                    <span className="font-bold text-lg text-primary">
+                                                        {
+                                                            data?.dayAfter
+                                                                .catering
+                                                        }
+                                                    </span>
+                                                </Show.Else>
+                                            </Show>
+                                        </div>
+                                        <div className="border-border border-t pt-2">
+                                            <div className="flex items-center justify-between">
+                                                <Show>
+                                                    <Show.When
+                                                        isTrue={isPending}
+                                                    >
+                                                        <Skeleton className="h-6 w-20 rounded-md" />
+                                                        <Skeleton className="h-5 w-10 rounded-md" />
+                                                    </Show.When>
+                                                    <Show.Else>
+                                                        <span className="font-semibold text-sm">
+                                                            Total:
+                                                        </span>
+                                                        <span className="font-bold text-lg">
+                                                            {(data?.dayAfter
+                                                                .tiffin || 0) +
+                                                                (data?.dayAfter
+                                                                    .catering ||
+                                                                    0)}
+                                                        </span>
+                                                    </Show.Else>
+                                                </Show>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+
+                                {links.map(({ label, date }) => (
+                                    <Link
                                         className="w-full"
-                                        variant="outline"
+                                        href={`/dashboard/scheduled?date=${format(
+                                            date,
+                                            "MM-dd-yyyy"
+                                        )}`}
+                                        key={label}
                                     >
-                                        {label} <SquareArrowOutUpRight />
-                                    </Button>
-                                </Link>
-                            ))}
-                        </div>
+                                        <Button
+                                            className="w-full"
+                                            variant="outline"
+                                        >
+                                            {label} <SquareArrowOutUpRight />
+                                        </Button>
+                                    </Link>
+                                ))}
+                            </div>
+                        </ScrollArea>
                     </Show.When>
                     <Show.Else>
                         <div className="flex w-full items-center justify-center gap-2 py-10 text-danger">
