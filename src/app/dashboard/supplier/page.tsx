@@ -4,29 +4,20 @@ import {
     HydrationBoundary,
     QueryClient,
 } from "@tanstack/react-query";
-import Header from "@/components/dashboard/header";
 import SupplierTable from "@/components/data-table/supplier-table";
-import { getStoresServer } from "@/lib/api/stores/get-stores";
 import { getSuppliersServer } from "@/lib/api/suppliers/get-suppliers";
 
 const Supplier = async () => {
     const queryClient = new QueryClient({
         defaultOptions: { queries: { staleTime: Number.POSITIVE_INFINITY } },
     });
-    await Promise.all([
-        queryClient.prefetchQuery({
-            queryKey: ["suppliers"],
-            queryFn: getSuppliersServer,
-        }),
-        queryClient.prefetchQuery({
-            queryKey: ["stores"],
-            queryFn: getStoresServer,
-        }),
-    ]);
+    await queryClient.prefetchQuery({
+        queryKey: ["suppliers"],
+        queryFn: getSuppliersServer,
+    });
 
     return (
         <Box className="flex-grow overflow-auto" component="main">
-            <Header />
             <Stack
                 spacing={2}
                 sx={{

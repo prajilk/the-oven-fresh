@@ -3,7 +3,6 @@ import Box from "@mui/material/Box";
 import Grid from "@mui/material/Grid2";
 import Stack from "@mui/material/Stack";
 import { Suspense } from "react";
-import Header from "@/components/dashboard/header";
 import ScheduledStatCard from "@/components/dashboard/scheduled-stat/scheduled-stat-card";
 import ScheduledStatServerWrapper from "@/components/dashboard/scheduled-stat/scheduled-stat-server-wrapper";
 import StatCardWrapper from "@/components/dashboard/stat-card/stat-card-wrapper";
@@ -20,12 +19,10 @@ export default function Dashboard() {
         <Box
             component="main"
             sx={{
-                flexGrow: 1,
                 overflow: "auto",
                 // position: "relative",
             }}
         >
-            <Header />
             <Stack
                 spacing={2}
                 sx={{

@@ -5,7 +5,6 @@ import {
     QueryClient,
 } from "@tanstack/react-query";
 import { format } from "date-fns";
-import Header from "@/components/dashboard/header";
 import ScheduledDeliveries from "@/components/scheduled-deliveries/scheduled-deliveries";
 import ScheduledOrders from "@/components/scheduled-orders/scheduled-orders";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
@@ -85,7 +84,6 @@ const ScheduledPage = async ({
                 // position: "relative",
             }}
         >
-            <Header />
             <Stack
                 spacing={2}
                 sx={{
