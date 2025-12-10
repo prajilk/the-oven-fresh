@@ -98,11 +98,7 @@ function PaymentDialogContent({
         0
     );
     const totalCustomItem = cateringCustomItem.reduce(
-        (acc, item) =>
-            acc +
-            (item.numberOfPieces
-                ? item.rate * item.numberOfPieces
-                : item.rate * (item.numberOfTrays || 1)),
+        (acc, item) => acc + item.rate * item.quantity,
         0
     );
 

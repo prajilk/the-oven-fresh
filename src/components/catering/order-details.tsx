@@ -205,11 +205,9 @@ export default function CateringOrderDetails({
             setEditCustomItems(false);
             updatedItem = customItems.map((item) => ({
                 itemDescription: item.itemDescription,
-                numberOfPersons: item.numberOfPersons,
                 rate: item.rate,
-                numberOfPieces: item.numberOfPieces,
-                numberOfTrays: item.numberOfTrays,
-                traySize: item.traySize,
+                quantity: item.quantity,
+                unit: item.unit,
             }));
         }
 
@@ -219,12 +217,7 @@ export default function CateringOrderDetails({
                 0
             ) +
             customItems.reduce(
-                (acc, item) =>
-                    acc +
-                    item.rate *
-                        ((item.numberOfPieces
-                            ? item.numberOfPieces
-                            : item.numberOfTrays) || 1),
+                (acc, item) => acc + item.rate * item.quantity,
                 0
             );
 
@@ -631,16 +624,16 @@ export default function CateringOrderDetails({
                                         <TableRow>
                                             <TableHead>Item</TableHead>
                                             <TableHead className="text-center">
-                                                No. of Persons
+                                                Quantity
                                             </TableHead>
                                             <TableHead className="text-center">
-                                                Tray Size
-                                            </TableHead>
-                                            <TableHead className="text-center">
-                                                No. of Tray/Pieces
+                                                Unit
                                             </TableHead>
                                             <TableHead className="whitespace-nowrap text-right">
-                                                Price per Tray/Piece
+                                                Rate
+                                            </TableHead>
+                                            <TableHead className="whitespace-nowrap text-right">
+                                                Total
                                             </TableHead>
                                         </TableRow>
                                     </TableHeader>
@@ -707,7 +700,7 @@ export default function CateringOrderDetails({
                                                                         handleCustomItemUpdate(
                                                                             // @ts-expect-error: item._id is a string
                                                                             item._id,
-                                                                            "numberOfPersons",
+                                                                            "quantity",
                                                                             e
                                                                                 .target
                                                                                 .value
@@ -715,16 +708,16 @@ export default function CateringOrderDetails({
                                                                     }}
                                                                     type="number"
                                                                     min="1"
-                                                                    placeholder="No. of Persons"
+                                                                    placeholder="Enter quantity"
                                                                     value={
-                                                                        item.numberOfPersons
+                                                                        item.quantity
                                                                     }
                                                                 />
                                                             </Show.When>
                                                             <Show.Else>
                                                                 <div className="font-medium text-center w-full">
                                                                     {
-                                                                        item.numberOfPersons
+                                                                        item.quantity
                                                                     }
                                                                 </div>
                                                             </Show.Else>
@@ -740,7 +733,7 @@ export default function CateringOrderDetails({
                                                         >
                                                             <Select
                                                                 value={
-                                                                    item.traySize
+                                                                    item.unit
                                                                 }
                                                                 onValueChange={(
                                                                     value
@@ -748,74 +741,51 @@ export default function CateringOrderDetails({
                                                                     handleCustomItemUpdate(
                                                                         // @ts-expect-error: item._id is a string
                                                                         item._id,
-                                                                        "traySize",
+                                                                        "unit",
                                                                         value
                                                                     )
                                                                 }
                                                                 disabled={
-                                                                    !item.traySize
+                                                                    !item.unit
                                                                 }
                                                             >
                                                                 <SelectTrigger id="traySize">
                                                                     <SelectValue placeholder="Select tray size" />
                                                                 </SelectTrigger>
                                                                 <SelectContent className="z-[1560]">
-                                                                    <SelectItem value="small">
+                                                                    <SelectItem value="full-tray">
+                                                                        Full
+                                                                        Tray
+                                                                    </SelectItem>
+                                                                    <SelectItem value="med-tray">
+                                                                        Med Tray
+                                                                    </SelectItem>
+                                                                    <SelectItem value="small-tray">
                                                                         Small
+                                                                        Tray
                                                                     </SelectItem>
-                                                                    <SelectItem value="medium">
-                                                                        Medium
+                                                                    <SelectItem value="pcs">
+                                                                        Pcs
                                                                     </SelectItem>
-                                                                    <SelectItem value="large">
-                                                                        Large
+                                                                    <SelectItem value="nos">
+                                                                        Nos
+                                                                    </SelectItem>
+                                                                    <SelectItem value="ounce">
+                                                                        Ounce
+                                                                    </SelectItem>
+                                                                    <SelectItem value="litre">
+                                                                        Litre
+                                                                    </SelectItem>
+                                                                    <SelectItem value="pound">
+                                                                        Pound
                                                                     </SelectItem>
                                                                 </SelectContent>
                                                             </Select>
                                                         </Show.When>
                                                         <Show.Else>
                                                             <div className="w-full text-center">
-                                                                {item?.traySize ??
+                                                                {item?.unit ??
                                                                     "--"}
-                                                            </div>
-                                                        </Show.Else>
-                                                    </Show>
-                                                </TableCell>
-                                                <TableCell className="whitespace-nowrap text-right capitalize">
-                                                    <Show>
-                                                        <Show.When
-                                                            isTrue={
-                                                                editCustomItems
-                                                            }
-                                                        >
-                                                            <Input
-                                                                className="ms-auto w-20"
-                                                                onChange={(
-                                                                    e
-                                                                ) => {
-                                                                    handleCustomItemUpdate(
-                                                                        // @ts-expect-error: item._id is a string
-                                                                        item._id,
-                                                                        item.traySize
-                                                                            ? "numberOfTrays"
-                                                                            : "numberOfPieces",
-                                                                        e.target
-                                                                            .value
-                                                                    );
-                                                                }}
-                                                                type="number"
-                                                                min="1"
-                                                                step="1"
-                                                                placeholder="Enter Value"
-                                                                value={
-                                                                    item.numberOfTrays ??
-                                                                    item.numberOfPieces
-                                                                }
-                                                            />
-                                                        </Show.When>
-                                                        <Show.Else>
-                                                            <div className="w-full text-center">
-                                                                {item?.numberOfTrays ??
-                                                                    item?.numberOfPieces}
                                                             </div>
                                                         </Show.Else>
                                                     </Show>
@@ -861,6 +831,15 @@ export default function CateringOrderDetails({
                                                             </div>
                                                         </Show.Else>
                                                     </Show>
+                                                </TableCell>
+                                                <TableCell className="text-right">
+                                                    <div className="w-full text-center">
+                                                        $
+                                                        {(
+                                                            item?.rate *
+                                                            item?.quantity
+                                                        ).toFixed(2)}
+                                                    </div>
                                                 </TableCell>
                                                 <TableCell className="text-right">
                                                     <ShadButton

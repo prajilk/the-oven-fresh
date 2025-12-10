@@ -103,11 +103,9 @@ export default function CateringFormStepper() {
             })),
             customItems: customItems.map((item) => ({
                 itemDescription: item.itemDescription,
-                numberOfPersons: item.numberOfPersons,
+                quantity: item.quantity,
                 rate: item.rate,
-                numberOfPieces: item.numberOfPieces,
-                numberOfTrays: item.numberOfTrays,
-                traySize: item.traySize,
+                unit: item.unit,
             })),
             deliveryDate: new Date(order.deliveryDate),
         };

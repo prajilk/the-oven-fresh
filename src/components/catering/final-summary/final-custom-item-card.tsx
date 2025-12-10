@@ -4,7 +4,6 @@ import { Button } from "@/components/ui/button";
 import type { CateringCustomItemState } from "@/lib/types/catering/catering-order-state";
 import { removeCustomItem } from "@/store/slices/catering-custom-item-slice";
 import { setAdvancePaid } from "@/store/slices/catering-order-slice";
-import { getPieceTotalAmount, getTrayTotalAmount } from "@/lib/utils";
 
 const FinalCustomItemCard = ({ item }: { item: CateringCustomItemState }) => {
     const dispatch = useDispatch();
@@ -24,19 +23,12 @@ const FinalCustomItemCard = ({ item }: { item: CateringCustomItemState }) => {
                     {item.itemDescription}{" "}
                 </h3>
                 <p className="text-gray-500 text-xs capitalize flex items-center gap-1">
-                    {item.numberOfPieces
-                        ? item.numberOfPieces + " pieces"
-                        : `${item.numberOfTrays} ${item.traySize}  trays`}{" "}
+                    {item.quantity} {item.unit.replace("-", " ")}{" "}
                     <X className="size-2.5" /> ${item.rate.toFixed(2)}
                 </p>
             </div>
             <div className="flex flex-col items-end justify-between">
-                <p className="font-medium">
-                    $
-                    {item.numberOfTrays
-                        ? getTrayTotalAmount(item.rate, item.numberOfTrays)
-                        : getPieceTotalAmount(item.rate, item.numberOfPieces)}
-                </p>
+                <p className="font-medium">${item.quantity * item.rate}</p>
                 <Button
                     className="bg-transparent text-red-500 hover:bg-red-200"
                     onClick={() => handleRemoveItem(item.itemDescription)}

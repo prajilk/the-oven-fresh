@@ -14,15 +14,12 @@ import { type FormEvent, useState } from "react";
 import { CateringCustomItemState } from "@/lib/types/catering/catering-order-state";
 import CustomFormContent from "./custom-form-content";
 
-const AddCustomItemDialog = () => {
+const AddCustomItemDialog2 = () => {
     const [formData, setFormData] = useState({
         itemDescription: "",
-        numberOfPersons: "",
-        selectedType: "tray", // 'tray' or 'pieces'
-        traySize: "",
-        numberOfTrays: "",
-        numberOfPieces: "",
+        quantity: "",
         rate: "",
+        unit: "",
     });
 
     const [errors, setErrors] = useState<Record<string, string>>({});
@@ -34,37 +31,16 @@ const AddCustomItemDialog = () => {
         if (!formData.itemDescription.trim()) {
             newErrors.itemDescription = "Item description is required";
         }
-        if (
-            !formData.numberOfPersons ||
-            Number(formData.numberOfPersons) <= 0
-        ) {
-            newErrors.numberOfPersons =
-                "Number of persons must be greater than 0";
-        }
-
-        if (formData.selectedType === "tray") {
-            if (!formData.traySize) {
-                newErrors.traySize = "Tray size is required";
-            }
-            if (
-                !formData.numberOfTrays ||
-                Number(formData.numberOfTrays) <= 0
-            ) {
-                newErrors.numberOfTrays =
-                    "Number of trays must be greater than 0";
-            }
-        } else {
-            if (
-                !formData.numberOfPieces ||
-                Number(formData.numberOfPieces) <= 0
-            ) {
-                newErrors.numberOfPieces =
-                    "Number of pieces must be greater than 0";
-            }
+        if (!formData.quantity || Number(formData.quantity) <= 0) {
+            newErrors.quantity = "Quantity must be greater than 0";
         }
 
         if (!formData.rate || Number(formData.rate) <= 0) {
             newErrors.rate = "Rate must be greater than 0";
+        }
+
+        if (!formData.unit) {
+            newErrors.unit = "Unit is required";
         }
 
         setErrors(newErrors);
@@ -80,35 +56,24 @@ const AddCustomItemDialog = () => {
 
         const submitData: CateringCustomItemState = {
             itemDescription: formData.itemDescription,
-            numberOfPersons: Number(formData.numberOfPersons),
+            quantity: Number(formData.quantity),
             rate: Number(formData.rate),
+            unit: formData.unit,
         };
-
-        if (formData.selectedType === "tray") {
-            submitData.traySize = formData.traySize;
-            submitData.numberOfTrays = Number(formData.numberOfTrays);
-        } else {
-            submitData.numberOfPieces = Number(formData.numberOfPieces);
-        }
 
         dispatch(
             addItem({
                 itemDescription: submitData.itemDescription,
-                numberOfPersons: Number(submitData.numberOfPersons),
+                quantity: Number(submitData.quantity),
                 rate: Number(submitData.rate),
-                numberOfPieces: submitData.numberOfPieces,
-                numberOfTrays: submitData.numberOfTrays,
-                traySize: submitData.traySize,
+                unit: submitData.unit,
             })
         );
         setFormData({
             itemDescription: "",
-            numberOfPersons: "",
-            selectedType: "tray",
-            traySize: "",
-            numberOfTrays: "",
-            numberOfPieces: "",
             rate: "",
+            quantity: "",
+            unit: "",
         });
     };
 
@@ -116,20 +81,14 @@ const AddCustomItemDialog = () => {
         if (!newOpen) {
             setFormData({
                 itemDescription: "",
-                numberOfPersons: "",
-                selectedType: "tray",
-                traySize: "",
-                numberOfTrays: "",
-                numberOfPieces: "",
                 rate: "",
+                quantity: "",
+                unit: "",
             });
             setErrors({});
         }
         // onOpenChange(newOpen)
     };
-
-    const rateLabel =
-        formData.selectedType === "tray" ? "Rate per Tray" : "Rate per Piece";
 
     return (
         <Dialog>
@@ -142,7 +101,7 @@ const AddCustomItemDialog = () => {
             <DialogContent className="sm:max-w-3xl">
                 <DialogHeader>
                     <DialogTitle className="text-2xl font-bold">
-                        Customer Entry Form
+                        Customer Item Entry Form
                     </DialogTitle>
                     <DialogDescription>
                         Fill in the details below to create a item
@@ -157,7 +116,6 @@ const AddCustomItemDialog = () => {
                         errors={errors}
                         formData={formData}
                         handleOpenChange={handleOpenChange}
-                        rateLabel={rateLabel}
                         setFormData={setFormData}
                     />
                 </form>
@@ -166,4 +124,4 @@ const AddCustomItemDialog = () => {
     );
 };
 
-export default AddCustomItemDialog;
+export default AddCustomItemDialog2;

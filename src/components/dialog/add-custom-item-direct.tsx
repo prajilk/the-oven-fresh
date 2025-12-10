@@ -8,11 +8,9 @@ import {
 } from "react";
 import { generateOrderId } from "@/lib/utils";
 import type { CateringDocument } from "@/models/types/catering";
-import { Button } from "../ui/button";
 import {
     Dialog,
     DialogContent,
-    DialogFooter,
     DialogHeader,
     DialogTitle,
     DialogTrigger,
@@ -31,12 +29,9 @@ const AddCustomItemDirectDialog = ({
 }) => {
     const [formData, setFormData] = useState({
         itemDescription: "",
-        numberOfPersons: "",
-        selectedType: "tray", // 'tray' or 'pieces'
-        traySize: "",
-        numberOfTrays: "",
-        numberOfPieces: "",
         rate: "",
+        quantity: "",
+        unit: "",
     });
 
     const [errors, setErrors] = useState<Record<string, string>>({});
@@ -47,37 +42,15 @@ const AddCustomItemDirectDialog = ({
         if (!formData.itemDescription.trim()) {
             newErrors.itemDescription = "Item description is required";
         }
-        if (
-            !formData.numberOfPersons ||
-            Number(formData.numberOfPersons) <= 0
-        ) {
-            newErrors.numberOfPersons =
-                "Number of persons must be greater than 0";
-        }
-
-        if (formData.selectedType === "tray") {
-            if (!formData.traySize) {
-                newErrors.traySize = "Tray size is required";
-            }
-            if (
-                !formData.numberOfTrays ||
-                Number(formData.numberOfTrays) <= 0
-            ) {
-                newErrors.numberOfTrays =
-                    "Number of trays must be greater than 0";
-            }
-        } else {
-            if (
-                !formData.numberOfPieces ||
-                Number(formData.numberOfPieces) <= 0
-            ) {
-                newErrors.numberOfPieces =
-                    "Number of pieces must be greater than 0";
-            }
+        if (!formData.quantity || Number(formData.quantity) <= 0) {
+            newErrors.quantity = "Quantity must be greater than 0";
         }
 
         if (!formData.rate || Number(formData.rate) <= 0) {
             newErrors.rate = "Rate must be greater than 0";
+        }
+        if (!formData.unit) {
+            newErrors.unit = "Unit is required";
         }
 
         setErrors(newErrors);
@@ -93,16 +66,10 @@ const AddCustomItemDirectDialog = ({
 
         const submitData: CateringCustomItemState = {
             itemDescription: formData.itemDescription,
-            numberOfPersons: Number(formData.numberOfPersons),
             rate: Number(formData.rate),
+            quantity: Number(formData.quantity),
+            unit: formData.unit,
         };
-
-        if (formData.selectedType === "tray") {
-            submitData.traySize = formData.traySize;
-            submitData.numberOfTrays = Number(formData.numberOfTrays);
-        } else {
-            submitData.numberOfPieces = Number(formData.numberOfPieces);
-        }
 
         setCustomItems((prev) => [
             ...prev,
@@ -113,12 +80,9 @@ const AddCustomItemDirectDialog = ({
         ]);
         setFormData({
             itemDescription: "",
-            numberOfPersons: "",
-            selectedType: "tray",
-            traySize: "",
-            numberOfTrays: "",
-            numberOfPieces: "",
             rate: "",
+            quantity: "",
+            unit: "",
         });
 
         enableSaveButton(true);
@@ -128,19 +92,13 @@ const AddCustomItemDirectDialog = ({
         if (!newOpen) {
             setFormData({
                 itemDescription: "",
-                numberOfPersons: "",
-                selectedType: "tray",
-                traySize: "",
-                numberOfTrays: "",
-                numberOfPieces: "",
                 rate: "",
+                quantity: "",
+                unit: "",
             });
             setErrors({});
         }
     };
-
-    const rateLabel =
-        formData.selectedType === "tray" ? "Rate per Tray" : "Rate per Piece";
 
     return (
         <Dialog>
@@ -157,7 +115,6 @@ const AddCustomItemDirectDialog = ({
                         errors={errors}
                         formData={formData}
                         handleOpenChange={handleOpenChange}
-                        rateLabel={rateLabel}
                         setFormData={setFormData}
                     />
                 </form>

@@ -17,7 +17,6 @@ import {
 import type { RootState } from "@/store";
 import { removeCustomItem } from "@/store/slices/catering-custom-item-slice";
 import { removeItem } from "@/store/slices/catering-item-slice";
-import { getPieceTotalAmount, getTrayTotalAmount } from "@/lib/utils";
 
 export function SelectedItemsList() {
     const cateringOrder = useSelector((state: RootState) => state.cateringItem);
@@ -35,12 +34,7 @@ export function SelectedItemsList() {
             0
         ) +
         cateringCustomItem.reduce(
-            (acc, item) =>
-                acc +
-                item.rate *
-                    ((item.numberOfTrays
-                        ? item.numberOfTrays
-                        : item.numberOfPieces) || 1),
+            (acc, item) => acc + item.rate * item.quantity,
             0
         );
     const tax =
@@ -141,11 +135,8 @@ export function SelectedItemsList() {
                                                 {item.itemDescription}
                                             </div>
                                             <div className="text-muted-foreground text-xs capitalize flex items-center gap-1">
-                                                {item.numberOfTrays ??
-                                                    item.numberOfPieces}{" "}
-                                                {item.numberOfPieces
-                                                    ? "Pieces"
-                                                    : `${item.traySize} Trays`}{" "}
+                                                {item.quantity}{" "}
+                                                {item.unit.replace("-", " ")}{" "}
                                                 <X className="size-2.5" /> ${" "}
                                                 {item.rate.toFixed(2)}
                                             </div>
@@ -153,16 +144,7 @@ export function SelectedItemsList() {
                                     </div>
                                     <div className="flex items-center justify-between">
                                         <div className="font-medium">
-                                            ${" "}
-                                            {item.numberOfTrays
-                                                ? getTrayTotalAmount(
-                                                      item.rate,
-                                                      item.numberOfTrays
-                                                  )
-                                                : getPieceTotalAmount(
-                                                      item.rate,
-                                                      item.numberOfPieces
-                                                  )}
+                                            $ {item.quantity * item.rate}
                                         </div>
                                         <Button
                                             className="h-8 w-8"

@@ -75,18 +75,13 @@ const CateringSchema = new Schema<CateringDocument>(
                         type: Number,
                         required: true,
                     },
-                    numberOfPersons: {
+                    quantity: {
                         type: Number,
                         required: true,
                     },
-                    numberOfPieces: {
-                        type: Number,
-                    },
-                    numberOfTrays: {
-                        type: Number,
-                    },
-                    traySize: {
+                    unit: {
                         type: String,
+                        required: true,
                     },
                 },
             ],

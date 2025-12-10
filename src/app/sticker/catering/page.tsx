@@ -1,6 +1,5 @@
 import { endOfDay, isValid, startOfDay } from "date-fns";
 import connectDB from "@/config/mongoose";
-import { getPieceTotalAmount, getTrayTotalAmount } from "@/lib/utils";
 import CateringMenu from "@/models/cateringMenuModel";
 import Catering from "@/models/cateringModel";
 import type { CateringDocumentPopulate } from "@/models/types/catering";
@@ -51,21 +50,9 @@ const CateringStickerPage = async ({
                     .concat(
                         order.customItems.map((item) => ({
                             name: item.itemDescription,
-                            quantity:
-                                (item.numberOfPieces ?? item.numberOfTrays) ||
-                                1,
-                            priceAtOrder: item.numberOfPieces
-                                ? getPieceTotalAmount(
-                                      item.rate,
-                                      item.numberOfPieces
-                                  )
-                                : getTrayTotalAmount(
-                                      item.rate,
-                                      item.numberOfTrays
-                                  ),
-                            size: `$${item.rate.toFixed(2)} ${
-                                item.traySize ? `- ${item.traySize} Trays` : ""
-                            }`,
+                            quantity: item.quantity,
+                            priceAtOrder: item.rate * item.quantity,
+                            size: `$${item.rate.toFixed(2)} -${item.unit}`,
                         }))
                     ),
             }))}

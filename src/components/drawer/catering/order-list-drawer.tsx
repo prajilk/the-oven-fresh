@@ -104,15 +104,9 @@ function OrderListDialogContent({
                 <ItemCardSummary
                     item={{
                         name: item.itemDescription,
-                        size: item.numberOfPieces
-                            ? `${item.numberOfPieces} Pieces`
-                            : `${item.numberOfTrays} ${item.traySize} Trays`,
-                        priceAtOrder: item.numberOfPieces
-                            ? item.rate * item.numberOfPieces
-                            : item.rate * (item.numberOfTrays || 1),
-                        quantity: item.numberOfPieces
-                            ? item.numberOfPieces
-                            : item.numberOfTrays || 1,
+                        size: item.unit,
+                        priceAtOrder: item.rate * item.quantity,
+                        quantity: item.quantity,
                     }}
                     key={item.itemDescription}
                 />

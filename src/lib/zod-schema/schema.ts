@@ -74,10 +74,8 @@ export const ZodCateringSchema = z.object({
             z.object({
                 itemDescription: z.string(),
                 rate: z.number(),
-                numberOfPersons: z.number(),
-                numberOfPieces: z.number().optional(),
-                numberOfTrays: z.number().optional(),
-                traySize: z.string().optional(),
+                quantity: z.number(),
+                unit: z.string(),
             })
         )
         .optional(),

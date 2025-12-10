@@ -23,10 +23,8 @@ export type CateringDocument = {
     customItems: {
         itemDescription: string;
         rate: number;
-        numberOfPersons: number;
-        numberOfPieces?: number;
-        numberOfTrays?: number;
-        traySize?: string;
+        quantity: number;
+        unit: string;
     }[];
     advancePaid: number;
     pendingBalance: number;

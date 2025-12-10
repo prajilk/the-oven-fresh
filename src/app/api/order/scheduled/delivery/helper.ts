@@ -121,9 +121,8 @@ const formatCatering = (order: CateringInputProps) => ({
     })),
     customItems: order.customItems.map((item) => ({
         name: item.itemDescription,
-        size: item.numberOfPieces
-            ? `${item.numberOfPieces} Pieces`
-            : `${item.numberOfTrays} ${item.traySize} Trays`,
+        quantity: item.quantity,
+        unit: item.unit,
     })),
 });
 

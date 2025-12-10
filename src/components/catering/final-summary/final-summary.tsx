@@ -75,15 +75,7 @@ export default function FinalSummary({
             (acc, item) => acc + item.priceAtOrder * item.quantity,
             0
         ) +
-        customItems.reduce(
-            (acc, item) =>
-                acc +
-                item.rate *
-                    ((item.numberOfPieces
-                        ? item.numberOfPieces
-                        : item.numberOfTrays) || 1),
-            0
-        );
+        customItems.reduce((acc, item) => acc + item.rate * item.quantity, 0);
     useEffect(() => {
         if (noTax) {
             dispatch(setTaxAmount(0));

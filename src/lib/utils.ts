@@ -299,19 +299,6 @@ function formatTimezone(date: Date) {
     ).toISOString();
 }
 
-function getTrayTotalAmount(rate: number, nTrays?: number) {
-    if (nTrays) {
-        return nTrays * rate;
-    }
-    return rate;
-}
-function getPieceTotalAmount(rate: number, nPieces?: number) {
-    if (nPieces) {
-        return nPieces * rate;
-    }
-    return rate;
-}
-
 // Function for validation of date format
 function isValidDate(stringDate: string) {
     return !Number.isNaN(Date.parse(stringDate));
@@ -334,7 +321,5 @@ export {
     haversine,
     capitalizeName,
     formatTimezone,
-    getTrayTotalAmount,
-    getPieceTotalAmount,
     isValidDate,
 };
