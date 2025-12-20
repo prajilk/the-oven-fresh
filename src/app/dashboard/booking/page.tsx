@@ -9,7 +9,6 @@ import TiffinForm from "@/components/forms/tiffin-form";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { getCateringMenuServer } from "@/lib/api/menu/get-catering-menu";
 import { getTiffinMenuServer } from "@/lib/api/menu/get-tiffin-menu";
-import CateringQuotation from "@/components/catering/quotation";
 
 const Booking = async () => {
     const queryClient = new QueryClient({
@@ -55,9 +54,6 @@ const Booking = async () => {
                             <TabsTrigger value="catering">
                                 Catering Booking
                             </TabsTrigger>
-                            <TabsTrigger value="catering-quotation">
-                                Catering Quotation
-                            </TabsTrigger>
                         </TabsList>
                         <div className="pt-3">
                             <Divider />
@@ -71,12 +67,6 @@ const Booking = async () => {
                             <HydrationBoundary state={dehydrate(queryClient)}>
                                 <CateringFormStepper />
                             </HydrationBoundary>
-                        </TabsContent>
-                        <TabsContent
-                            className="pt-3"
-                            value="catering-quotation"
-                        >
-                            <CateringQuotation />
                         </TabsContent>
                     </Tabs>
                 </Box>

@@ -52,7 +52,7 @@ export default async function DashboardLayout({
                     }))}
                     username={user.username || ""}
                 />
-                <div className="max-w-[100vw] md:flex-grow">
+                <div className="w-full max-w-[100vw] md:flex-grow">
                     <Header />
                     {/* Main content */}
                     {children}

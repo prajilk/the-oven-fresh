@@ -9,7 +9,7 @@ import PaidIcon from "@mui/icons-material/Paid";
 import PeopleIcon from "@mui/icons-material/People";
 import StoreIcon from "@mui/icons-material/Store";
 import TravelExploreRoundedIcon from "@mui/icons-material/TravelExploreRounded";
-import WarehouseRoundedIcon from "@mui/icons-material/WarehouseRounded";
+import StickyNote2RoundedIcon from "@mui/icons-material/StickyNote2Rounded";
 import List from "@mui/material/List";
 import ListItem from "@mui/material/ListItem";
 import ListItemButton from "@mui/material/ListItemButton";
@@ -36,6 +36,11 @@ const mainListItems = [
         text: "Booking",
         icon: <EditNoteRoundedIcon />,
         href: "/dashboard/booking",
+    },
+    {
+        text: "Quotations",
+        icon: <StickyNote2RoundedIcon />,
+        href: "/dashboard/quotations",
     },
     {
         text: "Orders",

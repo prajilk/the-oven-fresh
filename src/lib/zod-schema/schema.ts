@@ -140,3 +140,50 @@ export const ZodSupplierSchema = z.object({
     date: z.string(),
     paid: z.string(),
 });
+
+export const ZodPerHeadQuotationSchema = z.object({
+    shopAddress: z.string().min(3).max(150),
+    billTo: z.string().optional(),
+    attendedBy: z.string().optional(),
+    discount: z.number().optional(),
+    includeTax: z.boolean(),
+    tax: z.number(),
+    total: z.number(),
+    note: z.string().optional(),
+    whatsappNumber: z.string().optional(),
+    quotationType: z.enum(["per-head", "itemized"]),
+
+    title: z.string().optional(),
+    items: z.string().min(1),
+    costPerHead: z.number().min(1),
+    numberOfHeads: z.number().min(1),
+});
+
+export const ZodItemizedQuotationSchema = z.object({
+    shopAddress: z.string().min(3).max(150),
+    billTo: z.string().optional(),
+    attendedBy: z.string().optional(),
+    discount: z.number().optional(),
+    includeTax: z.boolean(),
+    tax: z.number(),
+    total: z.number(),
+    note: z.string().optional(),
+    whatsappNumber: z.string().optional(),
+    quotationType: z.enum(["per-head", "itemized"]),
+
+    items: z.array(
+        z.object({
+            id: z.string(),
+            name: z.string().min(1),
+            quantity: z.string().min(1),
+            unit: z.string().optional(),
+            rate: z.string().min(1),
+            subItems: z.array(
+                z.object({
+                    id: z.string(),
+                    name: z.string().min(1),
+                })
+            ),
+        })
+    ),
+});
