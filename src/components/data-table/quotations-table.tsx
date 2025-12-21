@@ -117,7 +117,12 @@ export default function QuotationsTable() {
                                 onSubmit={onSubmit}
                                 loading={loading}
                             />
-                            <Eye size={18} />
+                            <Link
+                                href={`/quotations?quotationId=${quotation._id}`}
+                                target="_blank"
+                            >
+                                <Eye size={18} />
+                            </Link>
                             <DeleteDialog
                                 action={deleteQuotationAction}
                                 errorMsg="Failed to delete quotation."
