@@ -118,7 +118,7 @@ export default function QuotationsTable() {
                                 loading={loading}
                             />
                             <Link
-                                href={`/quotations?quotationId=${quotation._id}`}
+                                href={`/quotation?quotationId=${quotation.quotationId}`}
                                 target="_blank"
                             >
                                 <Eye size={18} />
