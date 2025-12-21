@@ -138,6 +138,13 @@ export default function ItemizedQuotation() {
                 queryClient.invalidateQueries({
                     queryKey: ["quotation"],
                 });
+                if (res.messageSent === false) {
+                    toast.error("Error sending whatsapp message.");
+                    return;
+                } else if (res.messageSent === true) {
+                    toast.success("Order details sent to customer.");
+                    return;
+                }
                 return res;
             }
             throw res;

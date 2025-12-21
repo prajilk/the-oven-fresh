@@ -95,18 +95,19 @@ export default function PerHeadQuotation() {
         const promise = async () => {
             const res = await addQuotationAction(result.data, sentToWhatsApp);
             setLoading(false);
-            console.log(res);
 
             if (res.success) {
-                if (res.messageSent === false) {
-                    return "Error sending whatsapp message.";
-                } else if (res.messageSent === true) {
-                    return "Order details sent to customer.";
-                }
                 setPerHead(defaultPerHead);
                 queryClient.invalidateQueries({
                     queryKey: ["quotation"],
                 });
+                if (res.messageSent === false) {
+                    toast.error("Error sending whatsapp message.");
+                    return;
+                } else if (res.messageSent === true) {
+                    toast.success("Order details sent to customer.");
+                    return;
+                }
                 return res;
             }
             throw res;
