@@ -29,6 +29,9 @@ const TiffinSchema = new Schema<TiffinDocument>(
             type: mongoose.Schema.Types.ObjectId,
             ref: "Address",
         },
+        order_taken_by: {
+            type: String,
+        },
         startDate: {
             type: Date,
             required: true,
@@ -84,7 +87,7 @@ const TiffinSchema = new Schema<TiffinDocument>(
         },
         status: {
             type: String,
-            enum: ["PENDING", "ONGOING", "DELIVERED", "CANCELLED"],
+            enum: ["PENDING", "ONGOING", "DELIVERED", "PICKUP", "CANCELLED"],
             default: "PENDING",
         },
         trip: {

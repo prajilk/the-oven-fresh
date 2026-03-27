@@ -21,6 +21,7 @@ export type CateringOrderState = {
     discount: number;
     fullyPaid: boolean;
     order_type: "pickup" | "delivery";
+    order_taken_by?: string;
 };
 
 export type CateringItemsState = {

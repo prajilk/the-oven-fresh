@@ -1,503 +1,539 @@
-'use client';
+"use client";
 
-import { Button } from '@heroui/button';
-import { Chip, type ChipProps } from '@heroui/chip';
+import { Button } from "@heroui/button";
+import { Chip, type ChipProps } from "@heroui/chip";
 import {
-  Dropdown,
-  DropdownItem,
-  DropdownMenu,
-  DropdownTrigger,
-} from '@heroui/dropdown';
-import { Input } from '@heroui/input';
-import { Pagination } from '@heroui/pagination';
+    Dropdown,
+    DropdownItem,
+    DropdownMenu,
+    DropdownTrigger,
+} from "@heroui/dropdown";
+import { Input } from "@heroui/input";
+import { Pagination } from "@heroui/pagination";
 import {
-  type Selection,
-  Table,
-  TableBody,
-  TableCell,
-  TableColumn,
-  TableHeader,
-  TableRow,
-} from '@heroui/table';
-import { format } from 'date-fns';
+    type Selection,
+    Table,
+    TableBody,
+    TableCell,
+    TableColumn,
+    TableHeader,
+    TableRow,
+} from "@heroui/table";
+import { format } from "date-fns";
 import {
-  Banknote,
-  CreditCard,
-  Eye,
-  ListFilter,
-  Loader2,
-  PlusCircle,
-} from 'lucide-react';
-import Link from 'next/link';
-import React from 'react';
-import ExportToExcel from '@/components/csv/export-to-excel';
-import { Show } from '@/components/show';
-import { authClient } from '@/lib/auth-client';
-import { formatDate } from '@/lib/utils';
+    Banknote,
+    CreditCard,
+    Eye,
+    ListFilter,
+    Loader2,
+    PlusCircle,
+} from "lucide-react";
+import Link from "next/link";
+import React from "react";
+import ExportToExcel from "@/components/csv/export-to-excel";
+import { Show } from "@/components/show";
+import { authClient } from "@/lib/auth-client";
+import { formatDate } from "@/lib/utils";
 import type {
-  TiffinDocument,
-  TiffinDocumentPopulate,
-} from '@/models/types/tiffin';
-import { DatePickerWithRange } from '../../date-range-picker';
-import { DeleteOrderDrawer } from '../../drawer/delete-order-drawer';
+    TiffinDocument,
+    TiffinDocumentPopulate,
+} from "@/models/types/tiffin";
+import { DatePickerWithRange } from "../../date-range-picker";
+import { DeleteOrderDrawer } from "../../drawer/delete-order-drawer";
 
 export function capitalize(s: string) {
-  return s ? s.charAt(0).toUpperCase() + s.slice(1).toLowerCase() : '';
+    return s ? s.charAt(0).toUpperCase() + s.slice(1).toLowerCase() : "";
 }
 
 export const columns = [
-  { name: 'ID', uid: '_id', sortable: true },
-  { name: 'CUSTOMER', uid: 'customerName' },
-  { name: 'PHONE', uid: 'customerPhone' },
-  { name: 'START DATE', uid: 'startDate', sortable: true },
-  { name: 'END DATE', uid: 'endDate', sortable: true },
-  { name: 'NO. OF WEEKS', uid: 'numberOfWeeks' },
-  { name: 'PAYMENT METHOD', uid: 'paymentMethod' },
-  { name: 'ADVANCE PAID', uid: 'advancePaid' },
-  { name: 'PENDING BALANCE', uid: 'pendingBalance' },
-  { name: 'TAX', uid: 'tax' },
-  { name: 'TOTAL', uid: 'totalPrice' },
-  { name: 'FULLY PAID', uid: 'fullyPaid' },
-  { name: 'ORDER TYPE', uid: 'order_type' },
-  { name: 'NOTE', uid: 'note' },
-  { name: 'STATUS', uid: 'status', sortable: true },
-  { name: 'ACTIONS', uid: 'actions' },
+    { name: "ID", uid: "_id", sortable: true },
+    { name: "CUSTOMER", uid: "customerName" },
+    { name: "PHONE", uid: "customerPhone" },
+    { name: "START DATE", uid: "startDate", sortable: true },
+    { name: "END DATE", uid: "endDate", sortable: true },
+    { name: "NO. OF WEEKS", uid: "numberOfWeeks" },
+    { name: "PAYMENT METHOD", uid: "paymentMethod" },
+    { name: "ADVANCE PAID", uid: "advancePaid" },
+    { name: "PENDING BALANCE", uid: "pendingBalance" },
+    { name: "TAX", uid: "tax" },
+    { name: "TOTAL", uid: "totalPrice" },
+    { name: "FULLY PAID", uid: "fullyPaid" },
+    { name: "ORDER TYPE", uid: "order_type" },
+    { name: "NOTE", uid: "note" },
+    { name: "STATUS", uid: "status", sortable: true },
+    { name: "ACTIONS", uid: "actions" },
 ];
 
 export const statusOptions = [
-  { name: 'Pending', uid: 'pending' },
-  { name: 'Ongoing', uid: 'ongoing' },
-  { name: 'Delivered', uid: 'delivered' },
-  { name: 'Cancelled', uid: 'cancelled' },
+    { name: "Pending", uid: "pending" },
+    { name: "Ongoing", uid: "ongoing" },
+    { name: "Delivered", uid: "delivered" },
+    { name: "Pickup", uid: "pickup" },
+    { name: "Cancelled", uid: "cancelled" },
 ];
 
-const statusColorMap: Record<string, ChipProps['color']> = {
-  DELIVERED: 'success',
-  CANCELLED: 'danger',
-  PENDING: 'warning',
-  ONGOING: 'primary',
+const statusColorMap: Record<string, ChipProps["color"]> = {
+    DELIVERED: "success",
+    PICKUP: "success",
+    CANCELLED: "danger",
+    PENDING: "warning",
+    ONGOING: "primary",
 };
 
 const INITIAL_VISIBLE_COLUMNS = [
-  'customerName',
-  'startDate',
-  'endDate',
-  'numberOfWeeks',
-  'status',
-  'actions',
+    "customerName",
+    "startDate",
+    "endDate",
+    "numberOfWeeks",
+    "status",
+    "actions",
 ];
 
 export default function TiffinOrderTable({
-  orders,
-  isPending,
+    orders,
+    isPending,
 }: {
-  isPending: boolean;
-  orders: TiffinDocumentPopulate[];
+    isPending: boolean;
+    orders: TiffinDocumentPopulate[];
 }) {
-  const { data: session } = authClient.useSession();
-  const userRole = session?.user.role;
+    const { data: session } = authClient.useSession();
+    const userRole = session?.user.role;
 
-  const [filterValue, setFilterValue] = React.useState('');
-  const [visibleColumns, setVisibleColumns] = React.useState<Selection>(
-    new Set(INITIAL_VISIBLE_COLUMNS)
-  );
-  const [statusFilter, setStatusFilter] = React.useState<Selection>('all');
-  const [rowsPerPage, setRowsPerPage] = React.useState(10);
-
-  const [page, setPage] = React.useState(1);
-
-  const hasSearchFilter = Boolean(filterValue);
-
-  const headerColumns = React.useMemo(() => {
-    if (visibleColumns === 'all') {
-      return columns;
-    }
-
-    return columns.filter((column) =>
-      Array.from(visibleColumns).includes(column.uid)
+    const [filterValue, setFilterValue] = React.useState("");
+    const [visibleColumns, setVisibleColumns] = React.useState<Selection>(
+        new Set(INITIAL_VISIBLE_COLUMNS)
     );
-  }, [visibleColumns]);
+    const [statusFilter, setStatusFilter] = React.useState<Selection>("all");
+    const [rowsPerPage, setRowsPerPage] = React.useState(10);
 
-  const filteredItems = React.useMemo(() => {
-    let filteredOrders = [...orders];
+    const [page, setPage] = React.useState(1);
 
-    if (hasSearchFilter) {
-      filteredOrders = filteredOrders.filter(
-        (order) =>
-          order.customerName
-            .toLowerCase()
-            .includes(filterValue.toLowerCase()) ||
-          order.customerPhone.includes(filterValue) ||
-          order.orderId.toLowerCase().includes(filterValue.toLowerCase())
-      );
-    }
-    if (
-      statusFilter !== 'all' &&
-      Array.from(statusFilter).length !== statusOptions.length
-    ) {
-      filteredOrders = filteredOrders.filter((order) =>
-        Array.from(statusFilter).includes(order.status.toLowerCase())
-      );
-    }
+    const hasSearchFilter = Boolean(filterValue);
 
-    return filteredOrders;
-  }, [orders, filterValue, statusFilter, hasSearchFilter]);
+    const headerColumns = React.useMemo(() => {
+        if (visibleColumns === "all") {
+            return columns;
+        }
 
-  const pages = Math.ceil(filteredItems.length / rowsPerPage);
+        return columns.filter((column) =>
+            Array.from(visibleColumns).includes(column.uid)
+        );
+    }, [visibleColumns]);
 
-  const items = React.useMemo(() => {
-    const start = (page - 1) * rowsPerPage;
-    const end = start + rowsPerPage;
+    const filteredItems = React.useMemo(() => {
+        let filteredOrders = [...orders];
 
-    return filteredItems.slice(start, end);
-  }, [page, filteredItems, rowsPerPage]);
+        if (hasSearchFilter) {
+            filteredOrders = filteredOrders.filter(
+                (order) =>
+                    order.customerName
+                        .toLowerCase()
+                        .includes(filterValue.toLowerCase()) ||
+                    order.customerPhone.includes(filterValue) ||
+                    order.orderId
+                        .toLowerCase()
+                        .includes(filterValue.toLowerCase())
+            );
+        }
+        if (
+            statusFilter !== "all" &&
+            Array.from(statusFilter).length !== statusOptions.length
+        ) {
+            filteredOrders = filteredOrders.filter((order) =>
+                Array.from(statusFilter).includes(order.status.toLowerCase())
+            );
+        }
 
-  const sortedItems = React.useMemo(() => [...items], [items]);
+        return filteredOrders;
+    }, [orders, filterValue, statusFilter, hasSearchFilter]);
 
-  const renderCell = React.useCallback(
-    (order: TiffinDocument, columnKey: React.Key) => {
-      const cellValue = order[columnKey as keyof TiffinDocument];
+    const pages = Math.ceil(filteredItems.length / rowsPerPage);
 
-      // biome-ignore lint/nursery/noUnnecessaryConditions: <Ignore>
-      switch (columnKey) {
-        case 'startDate':
-          return <p>{formatDate(new Date(cellValue as string))}</p>;
-        case 'endDate':
-          return <p>{formatDate(new Date(cellValue as string))}</p>;
-        case 'paymentMethod':
-          return (
-            <p className="flex items-center justify-center gap-1 text-sm capitalize">
-              {cellValue?.toString() === 'cash' ? (
-                <Banknote className="text-muted-foreground" size={17} />
-              ) : (
-                <CreditCard className="text-muted-foreground" size={17} />
-              )}
-              {cellValue?.toString()}
-            </p>
-          );
-        case 'advancePaid':
-          return <p className="text-center">{`$${cellValue}`}</p>;
-        case 'pendingBalance':
-          return <p className="text-center">{`$${cellValue}`}</p>;
-        case 'tax':
-          return <p className="text-center">{`$${cellValue}`}</p>;
-        case 'totalPrice':
-          return `$${cellValue}`;
-        case 'numberOfWeeks':
-          return <p className="text-center">{cellValue?.toString()}</p>;
-        case 'fullyPaid':
-          return (
-            <Chip
-              className="capitalize"
-              color={cellValue ? 'success' : 'warning'}
-              size="sm"
-              variant="flat"
-            >
-              {cellValue ? 'Yes' : 'No'}
-            </Chip>
-          );
-        case 'status':
-          return (
-            <Chip
-              className="capitalize"
-              color={statusColorMap[order.status]}
-              size="sm"
-              variant="flat"
-            >
-              {cellValue?.toString()}
-            </Chip>
-          );
-        case 'actions':
-          return (
-            <div className="flex items-center justify-center gap-2.5">
-              <Link
-                href={`/dashboard/orders/tiffin-${
-                  order.orderId
-                }?mid=${order._id.toString()}`}
-              >
-                <Eye className="stroke-2 text-muted-foreground" size={18} />
-              </Link>
-              <DeleteOrderDrawer
-                orderId={order._id.toString()}
-                orderType="tiffin"
-              />
-            </div>
-          );
-        default:
-          return cellValue;
-      }
-    },
-    []
-  );
+    const items = React.useMemo(() => {
+        const start = (page - 1) * rowsPerPage;
+        const end = start + rowsPerPage;
 
-  const onNextPage = React.useCallback(() => {
-    if (page < pages) {
-      setPage(page + 1);
-    }
-  }, [page, pages]);
+        return filteredItems.slice(start, end);
+    }, [page, filteredItems, rowsPerPage]);
 
-  const onPreviousPage = React.useCallback(() => {
-    if (page > 1) {
-      setPage(page - 1);
-    }
-  }, [page]);
+    const sortedItems = React.useMemo(() => [...items], [items]);
 
-  const onRowsPerPageChange = React.useCallback(
-    (e: React.ChangeEvent<HTMLSelectElement>) => {
-      setRowsPerPage(Number(e.target.value));
-      setPage(1);
-    },
-    []
-  );
+    const renderCell = React.useCallback(
+        (order: TiffinDocument, columnKey: React.Key) => {
+            const cellValue = order[columnKey as keyof TiffinDocument];
 
-  const onSearchChange = React.useCallback((value?: string) => {
-    if (value) {
-      setFilterValue(value);
-      setPage(1);
-    } else {
-      setFilterValue('');
-    }
-  }, []);
-
-  const onClear = React.useCallback(() => {
-    setFilterValue('');
-    setPage(1);
-  }, []);
-
-  const excelData = React.useMemo(() => {
-    if (userRole === 'admin') {
-      return orders.map((order) => ({
-        orderId: order.orderId,
-        customerName: order.customerName,
-        phone: order.customerPhone,
-        address: order.address?.address,
-        startDate: format(new Date(order.startDate), 'PPP'),
-        endDate: format(new Date(order.endDate), 'PPP'),
-        numberOfWeeks: order.numberOfWeeks,
-        orderType: order.order_type,
-        paymentMethod: order.paymentMethod,
-        totalAmount: order.totalPrice - order.tax,
-        tax: order.tax,
-        fullyPaid: order.fullyPaid ? 'Yes' : 'No',
-        status: order.status,
-        note: order.note,
-        orderPlaced: format(new Date(order.createdAt), 'PPP'),
-        store: order.store.location,
-      }));
-    }
-    return [];
-  }, [orders, userRole]); // Added userRole in the dependency array to re-run when it changes
-
-  const topContent = React.useMemo(() => {
-    return (
-      <div className="flex flex-col gap-4">
-        <div className="flex flex-wrap items-end gap-3">
-          <Input
-            className="md:max-w-80"
-            classNames={{
-              inputWrapper: 'rounded-md bg-white border h-9',
-            }}
-            isClearable
-            onClear={() => onClear()}
-            onValueChange={onSearchChange}
-            placeholder="Search by name or phone or order ID..."
-            size="sm"
-            startContent={
-              <ListFilter
-                aria-hidden="true"
-                className="text-muted-foreground"
-                size={16}
-                strokeWidth={2}
-              />
+            // biome-ignore lint/nursery/noUnnecessaryConditions: <Ignore>
+            switch (columnKey) {
+                case "startDate":
+                    return <p>{formatDate(new Date(cellValue as string))}</p>;
+                case "endDate":
+                    return <p>{formatDate(new Date(cellValue as string))}</p>;
+                case "paymentMethod":
+                    return (
+                        <p className="flex items-center justify-center gap-1 text-sm capitalize">
+                            {cellValue?.toString() === "cash" ? (
+                                <Banknote
+                                    className="text-muted-foreground"
+                                    size={17}
+                                />
+                            ) : (
+                                <CreditCard
+                                    className="text-muted-foreground"
+                                    size={17}
+                                />
+                            )}
+                            {cellValue?.toString()}
+                        </p>
+                    );
+                case "advancePaid":
+                    return <p className="text-center">{`$${cellValue}`}</p>;
+                case "pendingBalance":
+                    return <p className="text-center">{`$${cellValue}`}</p>;
+                case "tax":
+                    return <p className="text-center">{`$${cellValue}`}</p>;
+                case "totalPrice":
+                    return `$${cellValue}`;
+                case "numberOfWeeks":
+                    return (
+                        <p className="text-center">{cellValue?.toString()}</p>
+                    );
+                case "fullyPaid":
+                    return (
+                        <Chip
+                            className="capitalize"
+                            color={cellValue ? "success" : "warning"}
+                            size="sm"
+                            variant="flat"
+                        >
+                            {cellValue ? "Yes" : "No"}
+                        </Chip>
+                    );
+                case "status":
+                    return (
+                        <Chip
+                            className="capitalize"
+                            color={statusColorMap[order.status]}
+                            size="sm"
+                            variant="flat"
+                        >
+                            {cellValue?.toString()}
+                        </Chip>
+                    );
+                case "actions":
+                    return (
+                        <div className="flex items-center justify-center gap-2.5">
+                            <Link
+                                href={`/dashboard/orders/tiffin-${
+                                    order.orderId
+                                }?mid=${order._id.toString()}`}
+                            >
+                                <Eye
+                                    className="stroke-2 text-muted-foreground"
+                                    size={18}
+                                />
+                            </Link>
+                            <DeleteOrderDrawer
+                                orderId={order._id.toString()}
+                                orderType="tiffin"
+                            />
+                        </div>
+                    );
+                default:
+                    return cellValue;
             }
-            value={filterValue}
-          />
-          <div className="flex items-end gap-3">
-            <Dropdown>
-              <DropdownTrigger className="hidden sm:flex">
-                <Button
-                  className="h-9 rounded-md border border-dashed bg-white shadow-sm"
-                  size="sm"
-                  startContent={<PlusCircle className="h-4 w-4" />}
-                  variant="bordered"
-                >
-                  Status
-                </Button>
-              </DropdownTrigger>
-              <DropdownMenu
-                aria-label="Table Columns"
-                closeOnSelect={false}
-                disallowEmptySelection
-                onSelectionChange={setStatusFilter}
-                selectedKeys={statusFilter}
-                selectionMode="multiple"
-              >
-                {statusOptions.map((status) => (
-                  <DropdownItem className="capitalize" key={status.uid}>
-                    {capitalize(status.name)}
-                  </DropdownItem>
-                ))}
-              </DropdownMenu>
-            </Dropdown>
-            <Dropdown>
-              <DropdownTrigger className="hidden sm:flex">
-                <Button
-                  className="h-9 rounded-md border border-dashed bg-white shadow-sm"
-                  size="sm"
-                  startContent={<PlusCircle className="h-4 w-4" />}
-                  variant="bordered"
-                >
-                  Columns
-                </Button>
-              </DropdownTrigger>
-              <DropdownMenu
-                aria-label="Table Columns"
-                className="scrollbar-thin max-h-96 overflow-y-scroll"
-                closeOnSelect={false}
-                disallowEmptySelection
-                onSelectionChange={setVisibleColumns}
-                selectedKeys={visibleColumns}
-                selectionMode="multiple"
-              >
-                {columns.map((column) => (
-                  <DropdownItem className="capitalize" key={column.uid}>
-                    {capitalize(column.name)}
-                  </DropdownItem>
-                ))}
-              </DropdownMenu>
-            </Dropdown>
-          </div>
-          <div className="flex flex-1 justify-end gap-2">
-            <Show>
-              <Show.When isTrue={userRole === 'admin' && orders.length > 0}>
-                <ExportToExcel data={excelData} filename="tiffin-orders.xlsx" />
-              </Show.When>
-            </Show>
-            <DatePickerWithRange
-              disabled={orders.length === 0}
-              label="Print Report"
-              orderType="tiffin"
-              printType="summary"
-            />
-            <DatePickerWithRange
-              disabled={orders.length === 0}
-              label="Print Stickers"
-              orderType="tiffin"
-              printType="sticker"
-            />
-          </div>
-        </div>
-        <div className="flex items-center justify-between">
-          <span className="text-default-400 text-small">
-            Total {orders?.length} orders
-          </span>
-          <label className="flex items-center text-default-400 text-small">
-            Rows per page:
-            <select
-              className="bg-transparent text-default-400 text-small outline-none"
-              onChange={onRowsPerPageChange}
-            >
-              <option value="5">5</option>
-              <option value="10">10</option>
-              <option value="15">15</option>
-            </select>
-          </label>
-        </div>
-      </div>
+        },
+        []
     );
-  }, [
-    filterValue,
-    statusFilter,
-    visibleColumns,
-    onSearchChange,
-    onRowsPerPageChange,
-    orders?.length,
-    excelData,
-    userRole,
-    onClear,
-  ]);
 
-  const bottomContent = React.useMemo(() => {
+    const onNextPage = React.useCallback(() => {
+        if (page < pages) {
+            setPage(page + 1);
+        }
+    }, [page, pages]);
+
+    const onPreviousPage = React.useCallback(() => {
+        if (page > 1) {
+            setPage(page - 1);
+        }
+    }, [page]);
+
+    const onRowsPerPageChange = React.useCallback(
+        (e: React.ChangeEvent<HTMLSelectElement>) => {
+            setRowsPerPage(Number(e.target.value));
+            setPage(1);
+        },
+        []
+    );
+
+    const onSearchChange = React.useCallback((value?: string) => {
+        if (value) {
+            setFilterValue(value);
+            setPage(1);
+        } else {
+            setFilterValue("");
+        }
+    }, []);
+
+    const onClear = React.useCallback(() => {
+        setFilterValue("");
+        setPage(1);
+    }, []);
+
+    const excelData = React.useMemo(() => {
+        if (userRole === "admin") {
+            return orders.map((order) => ({
+                orderId: order.orderId,
+                customerName: order.customerName,
+                phone: order.customerPhone,
+                address: order.address?.address,
+                startDate: format(new Date(order.startDate), "PPP"),
+                endDate: format(new Date(order.endDate), "PPP"),
+                numberOfWeeks: order.numberOfWeeks,
+                orderType: order.order_type,
+                paymentMethod: order.paymentMethod,
+                totalAmount: order.totalPrice - order.tax,
+                tax: order.tax,
+                fullyPaid: order.fullyPaid ? "Yes" : "No",
+                status: order.status,
+                note: order.note,
+                orderPlaced: format(new Date(order.createdAt), "PPP"),
+                store: order.store.location,
+            }));
+        }
+        return [];
+    }, [orders, userRole]); // Added userRole in the dependency array to re-run when it changes
+
+    const topContent = React.useMemo(() => {
+        return (
+            <div className="flex flex-col gap-4">
+                <div className="flex flex-wrap items-end gap-3">
+                    <Input
+                        className="md:max-w-80"
+                        classNames={{
+                            inputWrapper: "rounded-md bg-white border h-9",
+                        }}
+                        isClearable
+                        onClear={() => onClear()}
+                        onValueChange={onSearchChange}
+                        placeholder="Search by name or phone or order ID..."
+                        size="sm"
+                        startContent={
+                            <ListFilter
+                                aria-hidden="true"
+                                className="text-muted-foreground"
+                                size={16}
+                                strokeWidth={2}
+                            />
+                        }
+                        value={filterValue}
+                    />
+                    <div className="flex items-end gap-3">
+                        <Dropdown>
+                            <DropdownTrigger className="hidden sm:flex">
+                                <Button
+                                    className="h-9 rounded-md border border-dashed bg-white shadow-sm"
+                                    size="sm"
+                                    startContent={
+                                        <PlusCircle className="h-4 w-4" />
+                                    }
+                                    variant="bordered"
+                                >
+                                    Status
+                                </Button>
+                            </DropdownTrigger>
+                            <DropdownMenu
+                                aria-label="Table Columns"
+                                closeOnSelect={false}
+                                disallowEmptySelection
+                                onSelectionChange={setStatusFilter}
+                                selectedKeys={statusFilter}
+                                selectionMode="multiple"
+                            >
+                                {statusOptions.map((status) => (
+                                    <DropdownItem
+                                        className="capitalize"
+                                        key={status.uid}
+                                    >
+                                        {capitalize(status.name)}
+                                    </DropdownItem>
+                                ))}
+                            </DropdownMenu>
+                        </Dropdown>
+                        <Dropdown>
+                            <DropdownTrigger className="hidden sm:flex">
+                                <Button
+                                    className="h-9 rounded-md border border-dashed bg-white shadow-sm"
+                                    size="sm"
+                                    startContent={
+                                        <PlusCircle className="h-4 w-4" />
+                                    }
+                                    variant="bordered"
+                                >
+                                    Columns
+                                </Button>
+                            </DropdownTrigger>
+                            <DropdownMenu
+                                aria-label="Table Columns"
+                                className="scrollbar-thin max-h-96 overflow-y-scroll"
+                                closeOnSelect={false}
+                                disallowEmptySelection
+                                onSelectionChange={setVisibleColumns}
+                                selectedKeys={visibleColumns}
+                                selectionMode="multiple"
+                            >
+                                {columns.map((column) => (
+                                    <DropdownItem
+                                        className="capitalize"
+                                        key={column.uid}
+                                    >
+                                        {capitalize(column.name)}
+                                    </DropdownItem>
+                                ))}
+                            </DropdownMenu>
+                        </Dropdown>
+                    </div>
+                    <div className="flex flex-1 justify-end gap-2">
+                        <Show>
+                            <Show.When
+                                isTrue={
+                                    userRole === "admin" && orders.length > 0
+                                }
+                            >
+                                <ExportToExcel
+                                    data={excelData}
+                                    filename="tiffin-orders.xlsx"
+                                />
+                            </Show.When>
+                        </Show>
+                        <DatePickerWithRange
+                            disabled={orders.length === 0}
+                            label="Print Report"
+                            orderType="tiffin"
+                            printType="summary"
+                        />
+                        <DatePickerWithRange
+                            disabled={orders.length === 0}
+                            label="Print Stickers"
+                            orderType="tiffin"
+                            printType="sticker"
+                        />
+                    </div>
+                </div>
+                <div className="flex items-center justify-between">
+                    <span className="text-default-400 text-small">
+                        Total {orders?.length} orders
+                    </span>
+                    <label className="flex items-center text-default-400 text-small">
+                        Rows per page:
+                        <select
+                            className="bg-transparent text-default-400 text-small outline-none"
+                            onChange={onRowsPerPageChange}
+                        >
+                            <option value="5">5</option>
+                            <option value="10">10</option>
+                            <option value="15">15</option>
+                        </select>
+                    </label>
+                </div>
+            </div>
+        );
+    }, [
+        filterValue,
+        statusFilter,
+        visibleColumns,
+        onSearchChange,
+        onRowsPerPageChange,
+        orders?.length,
+        excelData,
+        userRole,
+        onClear,
+    ]);
+
+    const bottomContent = React.useMemo(() => {
+        return (
+            <div className="flex items-center justify-between px-2 py-2">
+                <Pagination
+                    color="primary"
+                    isCompact
+                    onChange={setPage}
+                    page={page}
+                    showControls
+                    showShadow
+                    total={pages}
+                />
+                <div className="hidden w-[30%] justify-end gap-2 sm:flex">
+                    <Button
+                        isDisabled={pages === 1}
+                        onPress={onPreviousPage}
+                        size="sm"
+                        variant="flat"
+                    >
+                        Previous
+                    </Button>
+                    <Button
+                        isDisabled={pages === 1}
+                        onPress={onNextPage}
+                        size="sm"
+                        variant="flat"
+                    >
+                        Next
+                    </Button>
+                </div>
+            </div>
+        );
+    }, [
+        // items.length,
+        // hasSearchFilter,
+        page,
+        pages,
+        onNextPage,
+        onPreviousPage,
+    ]);
+
     return (
-      <div className="flex items-center justify-between px-2 py-2">
-        <Pagination
-          color="primary"
-          isCompact
-          onChange={setPage}
-          page={page}
-          showControls
-          showShadow
-          total={pages}
-        />
-        <div className="hidden w-[30%] justify-end gap-2 sm:flex">
-          <Button
-            isDisabled={pages === 1}
-            onPress={onPreviousPage}
-            size="sm"
-            variant="flat"
-          >
-            Previous
-          </Button>
-          <Button
-            isDisabled={pages === 1}
-            onPress={onNextPage}
-            size="sm"
-            variant="flat"
-          >
-            Next
-          </Button>
-        </div>
-      </div>
+        <Table
+            aria-label="Example table with custom cells, pagination and sorting"
+            bottomContent={bottomContent}
+            bottomContentPlacement="outside"
+            classNames={{
+                wrapper: "max-h-[382px] scrollbar-none border shadow-md px-3",
+            }}
+            isHeaderSticky
+            topContent={topContent}
+            topContentPlacement="outside"
+        >
+            <TableHeader columns={headerColumns}>
+                {(column: {
+                    uid: string;
+                    sortable?: boolean;
+                    name: string;
+                }) => (
+                    <TableColumn
+                        align={column.uid === "actions" ? "center" : "start"}
+                        allowsSorting={column.sortable}
+                        key={column.uid}
+                    >
+                        {column.name}
+                    </TableColumn>
+                )}
+            </TableHeader>
+            <TableBody
+                emptyContent={"No orders found"}
+                isLoading={isPending}
+                items={sortedItems}
+                loadingContent={<Loader2 className="animate-spin" />}
+            >
+                {(item: TiffinDocumentPopulate) => (
+                    <TableRow key={item._id}>
+                        {(columnKey) => (
+                            <TableCell className="whitespace-nowrap">
+                                {/* @ts-expect-error: renderCell doesn't take TiffinDocPopulate type */}
+                                {renderCell(item, columnKey)}
+                            </TableCell>
+                        )}
+                    </TableRow>
+                )}
+            </TableBody>
+        </Table>
     );
-  }, [
-    // items.length,
-    // hasSearchFilter,
-    page,
-    pages,
-    onNextPage,
-    onPreviousPage,
-  ]);
-
-  return (
-    <Table
-      aria-label="Example table with custom cells, pagination and sorting"
-      bottomContent={bottomContent}
-      bottomContentPlacement="outside"
-      classNames={{
-        wrapper: 'max-h-[382px] scrollbar-none border shadow-md px-3',
-      }}
-      isHeaderSticky
-      topContent={topContent}
-      topContentPlacement="outside"
-    >
-      <TableHeader columns={headerColumns}>
-        {(column: { uid: string; sortable?: boolean; name: string }) => (
-          <TableColumn
-            align={column.uid === 'actions' ? 'center' : 'start'}
-            allowsSorting={column.sortable}
-            key={column.uid}
-          >
-            {column.name}
-          </TableColumn>
-        )}
-      </TableHeader>
-      <TableBody
-        emptyContent={'No orders found'}
-        isLoading={isPending}
-        items={sortedItems}
-        loadingContent={<Loader2 className="animate-spin" />}
-      >
-        {(item: TiffinDocumentPopulate) => (
-          <TableRow key={item._id}>
-            {(columnKey) => (
-              <TableCell className="whitespace-nowrap">
-                {/* @ts-expect-error: renderCell doesn't take TiffinDocPopulate type */}
-                {renderCell(item, columnKey)}
-              </TableCell>
-            )}
-          </TableRow>
-        )}
-      </TableBody>
-    </Table>
-  );
 }

@@ -11,6 +11,7 @@ export type TiffinDocument = {
     customerName: string;
     customerPhone: string;
     address: mongoose.Schema.Types.ObjectId | null;
+    order_taken_by?: string;
     startDate: Date;
     endDate: Date;
     numberOfWeeks: number;
@@ -25,7 +26,7 @@ export type TiffinDocument = {
     note: string;
     extended: boolean;
     extendedFrom: string[];
-    status: "PENDING" | "ONGOING" | "DELIVERED" | "CANCELLED";
+    status: "PENDING" | "ONGOING" | "DELIVERED" | "PICKUP" | "CANCELLED";
     trip: number;
 };
 
@@ -41,6 +42,6 @@ export interface TiffinDocumentPopulate
         _id: string;
         orderId: string;
         date: Date;
-        status: "PENDING" | "ONGOING" | "DELIVERED";
+        status: "PENDING" | "ONGOING" | "DELIVERED" | "PICKUP";
     }[];
 }

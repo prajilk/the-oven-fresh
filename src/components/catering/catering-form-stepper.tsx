@@ -39,6 +39,7 @@ export default function CateringFormStepper() {
             payment_method: "cash",
             note: "",
             order_type: "delivery",
+            order_taken_by: "",
             customerDetails: {
                 firstName: "",
                 lastName: "",

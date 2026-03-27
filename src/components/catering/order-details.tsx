@@ -56,6 +56,7 @@ import SizeSelect from "../select/size-select";
 import { Show } from "../show";
 import { Input } from "../ui/input";
 import LoadingButton from "../ui/loading-button";
+import { useQueryClient } from "@tanstack/react-query";
 
 const getStatusIcon = (status: string) => {
     switch (status) {
@@ -64,6 +65,8 @@ const getStatusIcon = (status: string) => {
         case "ONGOING":
             return <Truck className="h-4 w-4" />;
         case "DELIVERED":
+            return <BadgeCheck className="h-4 w-4" />;
+        case "PICKUP":
             return <BadgeCheck className="h-4 w-4" />;
         case "CANCELLED":
             return <XCircle className="h-4 w-4" />;
@@ -79,6 +82,8 @@ const getStatusColor = (status: string) => {
         case "ONGOING":
             return "bg-blue-100 text-blue-800 hover:bg-blue-100";
         case "DELIVERED":
+            return "bg-green-100 text-green-800 hover:bg-green-100";
+        case "PICKUP":
             return "bg-green-100 text-green-800 hover:bg-green-100";
         case "CANCELLED":
             return "bg-red-100 text-red-800 hover:bg-red-100";
@@ -99,6 +104,11 @@ export default function CateringOrderDetails({
     const [orderItems, setOrderItems] = useState(orderData?.items);
     const [customItems, setCustomItems] = useState(orderData?.customItems);
     const [showSettlementDialog, setShowSettlementDialog] = useState(false);
+    const [deliveryOrPickup, setDeliveryOrPickup] = useState<
+        "DELIVERED" | "PICKUP"
+    >("DELIVERED");
+
+    const queryClient = useQueryClient();
 
     const updateOrderStatus = (newStatus: OrderStatus, settlement = false) => {
         const promise = async () => {
@@ -119,6 +129,9 @@ export default function CateringOrderDetails({
             success: () => {
                 setLoading(false);
                 setShowSettlementDialog(false);
+                queryClient.invalidateQueries({
+                    queryKey: ["order", "stats", "reminder"],
+                });
                 return `Order status has been updated to ${newStatus}`;
             },
             error: () => {
@@ -133,13 +146,20 @@ export default function CateringOrderDetails({
         setLoading(true);
         setOrderStatus(newStatus as OrderStatus);
 
-        if (newStatus === "DELIVERED") {
+        if (newStatus === "DELIVERED" || newStatus === "PICKUP") {
+            setDeliveryOrPickup(newStatus);
             setShowSettlementDialog(true);
             return;
         }
 
         updateOrderStatus(newStatus as OrderStatus);
     };
+
+    function closeSettlementDialog(open: boolean) {
+        setShowSettlementDialog(open);
+        setOrderStatus(orderData?.status);
+        setLoading(open);
+    }
 
     function decreaseQuantity(itemId: string, size: string) {
         setOrderItems((prev) =>
@@ -900,8 +920,9 @@ export default function CateringOrderDetails({
             </div>
             <OrderSettlementDialog
                 open={showSettlementDialog}
-                setOpen={setShowSettlementDialog}
+                setOpen={closeSettlementDialog}
                 updateOrderStatus={updateOrderStatus}
+                deliveryOrPickup={deliveryOrPickup}
             />
         </div>
     );

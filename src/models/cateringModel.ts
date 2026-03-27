@@ -37,6 +37,9 @@ const CateringSchema = new Schema<CateringDocument>(
             type: Date,
             required: true,
         },
+        order_taken_by: {
+            type: String,
+        },
         items: {
             type: [
                 {
@@ -117,7 +120,7 @@ const CateringSchema = new Schema<CateringDocument>(
         },
         status: {
             type: String,
-            enum: ["PENDING", "ONGOING", "DELIVERED", "CANCELLED"],
+            enum: ["PENDING", "ONGOING", "DELIVERED", "PICKUP", "CANCELLED"],
             default: "PENDING",
         },
         trip: {

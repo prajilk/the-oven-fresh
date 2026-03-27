@@ -49,6 +49,7 @@ export const columns = [
 
 const statusColorMap: Record<string, ChipProps["color"]> = {
     DELIVERED: "success",
+    PICKUP: "success",
     CANCELLED: "danger",
     PENDING: "warning",
     ONGOING: "primary",

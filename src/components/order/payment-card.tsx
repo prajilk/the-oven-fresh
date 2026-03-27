@@ -115,11 +115,17 @@ const PaymentCard = ({
                                     <Show.Else>
                                         <Show>
                                             <Show.When
-                                                isTrue={pendingBalance >= 0}
+                                                isTrue={
+                                                    pendingBalance ===
+                                                        totalPrice &&
+                                                    advancePaid === 0
+                                                }
                                             >
-                                                Partially Paid
+                                                Unpaid
                                             </Show.When>
-                                            <Show.Else>Paid</Show.Else>
+                                            <Show.Else>
+                                                Partially Paid
+                                            </Show.Else>
                                         </Show>
                                     </Show.Else>
                                 </Show>

@@ -89,11 +89,13 @@ export const statusOptions = [
     { name: "Pending", uid: "pending" },
     { name: "Ongoing", uid: "ongoing" },
     { name: "Delivered", uid: "delivered" },
+    { name: "Pickup", uid: "pickup" },
     { name: "Cancelled", uid: "cancelled" },
 ];
 
 const statusColorMap: Record<string, ChipProps["color"]> = {
     DELIVERED: "success",
+    PICKUP: "success",
     CANCELLED: "danger",
     PENDING: "warning",
     ONGOING: "primary",
@@ -196,7 +198,7 @@ export default function CateringOrderTable({
                 case "paymentMethod":
                     return (
                         <p className="flex items-center justify-center gap-1 text-sm capitalize">
-                            {cellValue.toString() === "cash" ? (
+                            {cellValue?.toString() === "cash" ? (
                                 <Banknote
                                     className="text-muted-foreground"
                                     size={17}
@@ -207,7 +209,7 @@ export default function CateringOrderTable({
                                     size={17}
                                 />
                             )}
-                            {cellValue.toString()}
+                            {cellValue?.toString()}
                         </p>
                     );
                 case "advancePaid":

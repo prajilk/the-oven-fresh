@@ -2,7 +2,7 @@
 
 import { useMediaQuery } from "@mui/material";
 import type { UseMutationResult } from "@tanstack/react-query";
-import { useEffect, useState } from "react";
+import { type Dispatch, type SetStateAction, useEffect, useState } from "react";
 import type { UseFormReturn } from "react-hook-form";
 import type { z } from "zod";
 import Whatsapp from "@/components/icons/whatsapp";
@@ -43,9 +43,9 @@ export function TiffinConfirmDrawer({
     mutation: UseMutationResult<unknown, unknown, unknown, unknown>;
     form: UseFormReturn<z.infer<typeof ZodTiffinSchema>>;
     open: boolean;
-    setOpen: React.Dispatch<React.SetStateAction<boolean>>;
+    setOpen: Dispatch<SetStateAction<boolean>>;
     tiffinMenu?: TiffinMenuDocument | null;
-    setSentToWhatsapp: React.Dispatch<React.SetStateAction<boolean>>;
+    setSentToWhatsapp: Dispatch<SetStateAction<boolean>>;
 }) {
     const [advanceAmount, setAdvanceAmount] = useState("");
     const [discountAmount, setDiscountAmount] = useState("");

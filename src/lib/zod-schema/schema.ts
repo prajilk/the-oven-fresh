@@ -89,6 +89,7 @@ export const ZodCateringSchema = z.object({
     discount: z.number(),
     fullyPaid: z.boolean(),
     order_type: z.enum(["pickup", "delivery"]),
+    order_taken_by: z.string().optional(),
 });
 
 export const ZodCateringMenuSchema = z.object({
@@ -118,18 +119,25 @@ export const ZodTiffinSchema = z.object({
     discount: z.string().optional(),
     note: z.string().optional(),
     order_type: z.enum(["pickup", "delivery"]),
+    order_taken_by: z.string().optional(),
 });
 
 export const ZodGrocerySchema = z.object({
-    item: z.string().min(3).max(20),
-    quantity: z.string().min(1),
-    unit: z.enum(["L", "Kg", "g", "lbs", "Pcs", "Nos", "none"]),
-    price: z.string(),
-    tax: z.string(),
-    total: z.string(),
-    purchasedFrom: z.string(),
-    date: z.date({
-        error: "Invalid ISO date format",
+    item: z
+        .string()
+        .min(3, "Item is required")
+        .max(20, "Item must be 3-20 characters long"),
+    quantity: z.string().min(1, "Quantity is required"),
+    unit: z.enum(
+        ["L", "Kg", "g", "lbs", "Pcs", "Nos", "none"],
+        "Unit is required"
+    ),
+    price: z.string().min(1, "Price is required"),
+    tax: z.string().min(1, "Tax is required"),
+    total: z.string().min(1, "Total is required"),
+    purchasedFrom: z.string().min(1, "Purchased from is required"),
+    date: z.string({
+        error: "Invalid date format",
     }),
 });
 

@@ -14,6 +14,7 @@ export type CateringDocument = {
     customerPhone: string;
     deliveryDate: Date;
     deliveryDateLocal: Date;
+    order_taken_by?: string;
     items: {
         itemId: string;
         priceAtOrder: number;
@@ -36,7 +37,7 @@ export type CateringDocument = {
     tax: number;
     deliveryCharge: number;
     note: string;
-    status: "PENDING" | "ONGOING" | "DELIVERED" | "CANCELLED";
+    status: "PENDING" | "ONGOING" | "DELIVERED" | "PICKUP" | "CANCELLED";
     trip: number;
 };
 

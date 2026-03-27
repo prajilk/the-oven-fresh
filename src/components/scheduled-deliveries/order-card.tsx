@@ -129,6 +129,7 @@ export default OrderCard;
 function CustomChip({ children }: { children: ReactNode }) {
     const colorMap: Record<string, string> = {
         DELIVERED: "bg-success",
+        PICKUP: "bg-success",
         ONGOING: "bg-warning",
         PENDING: "bg-primary",
     };

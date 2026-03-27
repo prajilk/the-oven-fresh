@@ -78,6 +78,7 @@ export default function TiffinForm() {
             },
             note: "",
             tax: 0,
+            order_taken_by: "",
         },
     });
 
@@ -486,6 +487,26 @@ export default function TiffinForm() {
                             </FormItem>
                         )}
                     />
+
+                    <FormField
+                        control={form.control}
+                        name="order_taken_by"
+                        render={({ field }) => (
+                            <FormItem>
+                                <FormLabel>Order taken by</FormLabel>
+                                <FormControl>
+                                    <Input
+                                        placeholder="Name of staff who took the order"
+                                        type="text"
+                                        {...field}
+                                    />
+                                </FormControl>
+
+                                <FormMessage />
+                            </FormItem>
+                        )}
+                    />
+
                     <TiffinConfirmDrawer
                         form={form}
                         // @ts-expect-error: mutation type doesn't match UseMutationResult type
