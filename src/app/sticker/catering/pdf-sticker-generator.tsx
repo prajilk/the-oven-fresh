@@ -7,14 +7,26 @@ import React, { useEffect, useState } from "react";
 type Order = {
     id: string;
     deliveryDate: Date;
+    createdAt: Date;
     order_type: "pickup" | "delivery";
+    address: string;
+    aptSuiteUnit?: string;
     customerName: string;
     phone: string;
-    note: string;
+    order_taken_by?: string;
+    fullyPaid: boolean;
+    customItems: Array<{
+        _id: string;
+        itemDescription: string;
+        quantity: number;
+        rate: number;
+        unit: string;
+    }>;
 };
 
 type CateringOrder = Order & {
     items: Array<{
+        _id: string;
         name: string;
         quantity: number;
         priceAtOrder: number;
@@ -25,65 +37,69 @@ type CateringOrder = Order & {
 // Create styles
 const styles = StyleSheet.create({
     page: {
-        flexDirection: "column",
-        backgroundColor: "#ffffff",
-        padding: 30,
+        padding: 20,
+        fontSize: 10,
+        fontFamily: "Helvetica",
     },
-    title: {
-        fontSize: 18,
-        marginBottom: 10,
-        textAlign: "center",
-    },
-    subtitle: {
-        fontSize: 12,
-        marginBottom: 20,
-        textAlign: "center",
-    },
-    table: {
-        display: "flex",
-        width: "auto",
-        borderStyle: "solid",
-        borderWidth: 1,
-        borderRightWidth: 0,
-        borderBottomWidth: 0,
-    },
-    tableRow: {
-        margin: "auto",
+
+    row: {
         flexDirection: "row",
+        justifyContent: "space-between",
     },
-    tableColHeader: {
-        width: "20%",
-        borderStyle: "solid",
-        borderWidth: 1,
-        borderLeftWidth: 0,
-        borderTopWidth: 0,
-        padding: 5,
-        fontSize: 8,
+
+    section: {
+        marginBottom: 10,
+    },
+
+    label: {},
+
+    value: {
         fontWeight: "bold",
-        backgroundColor: "#f0f0f0",
+        textTransform: "capitalize",
     },
-    tableCol: {
-        width: "20%",
-        borderStyle: "solid",
-        borderWidth: 1,
-        borderLeftWidth: 0,
-        borderTopWidth: 0,
-        padding: 5,
-        fontSize: 7,
+
+    divider: {
+        borderBottomWidth: 1,
+        borderBottomColor: "#999",
+        marginVertical: 8,
     },
-    tableColWide: {
-        width: "20%",
-        borderStyle: "solid",
+
+    tableHeader: {
+        flexDirection: "row",
+        borderBottomWidth: 1,
+        borderBottomColor: "#000",
+        paddingBottom: 4,
+        marginBottom: 4,
+    },
+
+    tableRow: {
+        flexDirection: "row",
+        marginBottom: 2,
+    },
+
+    colItem: { width: "40%" },
+    colQty: { width: "10%" },
+    colUnit: { width: "20%" },
+    colRemarks: { width: "30%" },
+
+    remarksBox: {
         borderWidth: 1,
-        borderLeftWidth: 0,
-        borderTopWidth: 0,
-        padding: 5,
-        fontSize: 7,
+        height: 80,
+    },
+
+    footer: {
+        marginTop: 20,
     },
 });
 
 // PDF Document component
-export default function CateringSheet({ orders }: { orders: CateringOrder[] }) {
+export default function CateringSheet({
+    order,
+    remarks,
+}: {
+    order: CateringOrder;
+    remarks: Record<string, string>;
+}) {
     const [PDFViewer, setPDFViewer] = useState<React.ComponentType | null>(
         null
     );
@@ -98,146 +114,131 @@ export default function CateringSheet({ orders }: { orders: CateringOrder[] }) {
         // @ts-expect-error: PDFViewer is not defined
         <PDFViewer height={800} width="100%">
             <Document>
-                {orders.length > 0 && (
-                    <Page size="A4" style={styles.page}>
-                        <View
-                            style={{
-                                width: "100%",
-                                display: "flex",
-                                justifyContent: "center",
-                                flexDirection: "column",
-                            }}
-                        >
-                            <Text style={styles.title}>
-                                Catering Order Sheet
+                <Page size="A4" style={styles.page}>
+                    {/* Header */}
+                    <View style={[styles.row, styles.section]}>
+                        <View>
+                            <Text>
+                                <Text style={styles.label}>
+                                    Customer Name:{" "}
+                                </Text>
+                                <Text style={styles.value}>
+                                    {order.customerName}
+                                </Text>
                             </Text>
-                            <Text style={styles.subtitle}>
-                                Printed on:{" "}
-                                {format(new Date(), "MMMM d, yyyy HH:mm:ss")}
+                            <Text>
+                                <Text style={styles.label}>Phone #: </Text>
+                                <Text style={styles.value}>{order.phone}</Text>
                             </Text>
                         </View>
-                        <View style={styles.table}>
-                            {/* Table Header */}
-                            <View style={styles.tableRow}>
-                                <View
-                                    style={{
-                                        ...styles.tableColHeader,
-                                        width: "15%",
-                                    }}
-                                >
-                                    <Text>Order ID</Text>
-                                </View>
-                                <View
-                                    style={{
-                                        ...styles.tableColHeader,
-                                        width: "15%",
-                                    }}
-                                >
-                                    <Text>Customer</Text>
-                                </View>
-                                <View
-                                    style={{
-                                        ...styles.tableColHeader,
-                                        width: "15%",
-                                    }}
-                                >
-                                    <Text>Phone</Text>
-                                </View>
-                                <View
-                                    style={{
-                                        ...styles.tableColWide,
-                                        width: "20%",
-                                    }}
-                                >
-                                    <Text>Note</Text>
-                                </View>
-                                <View
-                                    style={{
-                                        ...styles.tableColHeader,
-                                        width: "10%",
-                                    }}
-                                >
-                                    <Text>Type</Text>
-                                </View>
-                                <View
-                                    style={{
-                                        ...styles.tableColHeader,
-                                        width: "25%",
-                                    }}
-                                >
-                                    <Text>Items</Text>
-                                </View>
-                            </View>
-                            {/* Table Body */}
-                            {orders.map((order) => (
-                                <React.Fragment key={order.id}>
-                                    <View style={styles.tableRow}>
-                                        <View
-                                            style={{
-                                                ...styles.tableCol,
-                                                width: "15%",
-                                            }}
-                                        >
-                                            <Text>{order.id}</Text>
-                                        </View>
-                                        <View
-                                            style={{
-                                                ...styles.tableCol,
-                                                width: "15%",
-                                            }}
-                                        >
-                                            <Text>{order.customerName}</Text>
-                                        </View>
-                                        <View
-                                            style={{
-                                                ...styles.tableCol,
-                                                width: "15%",
-                                            }}
-                                        >
-                                            <Text>{order.phone}</Text>
-                                        </View>
-                                        <View
-                                            style={{
-                                                ...styles.tableColWide,
-                                                width: "20%",
-                                            }}
-                                        >
-                                            <Text>{order.note}</Text>
-                                        </View>
-                                        <View
-                                            style={{
-                                                ...styles.tableCol,
-                                                width: "10%",
-                                            }}
-                                        >
-                                            <Text
-                                                style={{
-                                                    textTransform: "capitalize",
-                                                }}
-                                            >
-                                                {order.order_type}
-                                            </Text>
-                                        </View>
-                                        <View
-                                            style={{
-                                                ...styles.tableCol,
-                                                width: "25%",
-                                            }}
-                                        >
-                                            {order.items?.map((item) => (
-                                                <Text key={item.name}>
-                                                    {item.name} [{item.size}] (x
-                                                    {item.quantity}) - $
-                                                    {item.priceAtOrder}
-                                                </Text>
-                                            ))}
-                                        </View>
-                                    </View>
-                                </React.Fragment>
-                            ))}
+
+                        <View>
+                            <Text>
+                                <Text style={styles.value}>{order.id}</Text>
+                            </Text>
+                            <Text>
+                                <Text>{format(order.createdAt, "PPP")}</Text>
+                            </Text>
                         </View>
-                    </Page>
-                )}
+                    </View>
+
+                    <View style={styles.divider} />
+
+                    {/* Event */}
+                    <View style={[styles.row, styles.section]}>
+                        <Text>
+                            <Text style={styles.label}>Date of Event: </Text>
+                            <Text style={styles.value}>
+                                {format(
+                                    order.deliveryDate,
+                                    "EEEE, MMMM do, yyyy"
+                                )}{" "}
+                                | {format(order.deliveryDate, "hh:mm a")}
+                            </Text>
+                        </Text>
+                        <Text>
+                            <Text style={styles.label}>
+                                Count:{" "}
+                                {order.items.length + order.customItems.length}
+                            </Text>
+                        </Text>
+                    </View>
+
+                    <View style={styles.section}>
+                        <Text>
+                            <Text style={styles.label}>Delivery Method: </Text>
+                            <Text style={styles.value}>{order.order_type}</Text>
+                        </Text>
+                        <Text>
+                            <Text style={styles.label}>Delivery Details: </Text>
+                            <Text style={styles.value}>
+                                {order.address}
+                            </Text> | {order.aptSuiteUnit}
+                        </Text>
+                    </View>
+
+                    <View style={styles.divider} />
+
+                    {/* Table Header */}
+                    <View style={styles.tableHeader}>
+                        <Text style={styles.colItem}>Items</Text>
+                        <Text style={styles.colQty}>Qty</Text>
+                        <Text style={styles.colUnit}>Unit</Text>
+                        <Text style={styles.colRemarks}>Remarks</Text>
+                    </View>
+
+                    {/* Table Rows */}
+                    {order.items.map((item, i) => (
+                        <View style={styles.tableRow} key={i}>
+                            <Text style={[styles.colItem, styles.value]}>
+                                {item.name}
+                            </Text>
+                            <Text style={[styles.colQty, styles.value]}>
+                                {item.quantity}
+                            </Text>
+                            <Text style={[styles.colUnit, styles.value]}>
+                                {item.size}
+                            </Text>
+                            <Text style={styles.colRemarks}>
+                                {remarks?.[item._id] || ""}
+                            </Text>
+                        </View>
+                    ))}
+                    {order.customItems.map((item, i) => (
+                        <View style={styles.tableRow} key={i}>
+                            <Text style={[styles.colItem, styles.value]}>
+                                {item.itemDescription}
+                            </Text>
+                            <Text style={[styles.colQty, styles.value]}>
+                                {item.quantity}
+                            </Text>
+                            <Text style={[styles.colUnit, styles.value]}>
+                                {item.unit}
+                            </Text>
+                            <Text style={styles.colRemarks}>
+                                {remarks?.[item._id] || ""}
+                            </Text>
+                        </View>
+                    ))}
+
+                    <View style={styles.divider} />
+
+                    {/* Footer */}
+                    <View style={[styles.row, styles.footer]}>
+                        <Text>
+                            <Text style={styles.label}>Payment Status: </Text>
+                            <Text style={styles.value}>
+                                {order.fullyPaid ? "Paid" : "Unpaid"}
+                            </Text>
+                        </Text>
+                        <Text>
+                            Order Taken:{" "}
+                            <Text style={styles.value}>
+                                {order.order_taken_by}
+                            </Text>
+                        </Text>
+                    </View>
+                </Page>
             </Document>
         </PDFViewer>
     ) : (

@@ -98,7 +98,6 @@ const CustomFormContent = ({
                         id="rate"
                         type="number"
                         placeholder="Enter rate"
-                        min="1"
                         step="0.01"
                         value={formData.rate}
                         onChange={(e) =>

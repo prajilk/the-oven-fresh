@@ -15,6 +15,7 @@ import {
     Eye,
     ListFilter,
     Loader2,
+    Pencil,
     Plus,
 } from "lucide-react";
 import { Key, useCallback, useMemo, useState } from "react";
@@ -117,6 +118,11 @@ export default function QuotationsTable() {
                                 onSubmit={onSubmit}
                                 loading={loading}
                             />
+                            <Link
+                                href={`/dashboard/quotations/edit?id=${quotation.quotationId}`}
+                            >
+                                <Pencil size={18} />
+                            </Link>
                             <Link
                                 href={`/quotation?quotationId=${quotation.quotationId}`}
                                 target="_blank"

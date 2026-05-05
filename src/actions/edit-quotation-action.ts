@@ -9,7 +9,7 @@ import {
 import Quotation from "@/models/quotationModel";
 import { sendWhatsappMessage } from "@/lib/whatsapp";
 
-export async function addQuotationAction(
+export async function editQuotationAction(
     data:
         | z.infer<typeof ZodPerHeadQuotationSchema>
         | z.infer<typeof ZodItemizedQuotationSchema>,
@@ -30,26 +30,28 @@ export async function addQuotationAction(
                 data.idSuffix
             }`;
 
-            await Quotation.create({
-                quotationId,
-                shopAddress: result.data.shopAddress,
-                billTo: result.data.billTo,
-                attendedBy: result.data.attendedBy,
-                quotationType: result.data.quotationType,
-                phone: result.data.whatsappNumber,
-                note: result.data.note,
-                discount: result.data.discount,
-                includeTax: result.data.includeTax,
-                tax: result.data.tax,
-                total: result.data.total,
-                perHead: {
-                    title: result.data.title,
-                    items: result.data.items,
-                    costPerHead: result.data.costPerHead,
-                    numberOfHeads: result.data.numberOfHeads,
-                },
-                itemized: {},
-            });
+            await Quotation.findOneAndUpdate(
+                { quotationId },
+                {
+                    shopAddress: result.data.shopAddress,
+                    billTo: result.data.billTo,
+                    attendedBy: result.data.attendedBy,
+                    quotationType: result.data.quotationType,
+                    phone: result.data.whatsappNumber,
+                    note: result.data.note,
+                    discount: result.data.discount,
+                    includeTax: result.data.includeTax,
+                    tax: result.data.tax,
+                    total: result.data.total,
+                    perHead: {
+                        title: result.data.title,
+                        items: result.data.items,
+                        costPerHead: result.data.costPerHead,
+                        numberOfHeads: result.data.numberOfHeads,
+                    },
+                    itemized: {},
+                }
+            );
         } else if (data.quotationType === "itemized") {
             const result = ZodItemizedQuotationSchema.safeParse(data);
 
@@ -61,23 +63,25 @@ export async function addQuotationAction(
                 data.idSuffix
             }`;
 
-            await Quotation.create({
-                quotationId,
-                shopAddress: result.data.shopAddress,
-                billTo: result.data.billTo,
-                attendedBy: result.data.attendedBy,
-                quotationType: result.data.quotationType,
-                phone: result.data.whatsappNumber,
-                note: result.data.note,
-                discount: result.data.discount,
-                includeTax: result.data.includeTax,
-                tax: result.data.tax,
-                total: result.data.total,
-                perHead: {},
-                itemized: {
-                    items: result.data.items,
-                },
-            });
+            await Quotation.findOneAndUpdate(
+                { quotationId },
+                {
+                    shopAddress: result.data.shopAddress,
+                    billTo: result.data.billTo,
+                    attendedBy: result.data.attendedBy,
+                    quotationType: result.data.quotationType,
+                    phone: result.data.whatsappNumber,
+                    note: result.data.note,
+                    discount: result.data.discount,
+                    includeTax: result.data.includeTax,
+                    tax: result.data.tax,
+                    total: result.data.total,
+                    perHead: {},
+                    itemized: {
+                        items: result.data.items,
+                    },
+                }
+            );
         }
 
         if (sentToWhatsApp) {

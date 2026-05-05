@@ -27,6 +27,7 @@ import {
     ListFilter,
     Loader2,
     PlusCircle,
+    Printer,
 } from "lucide-react";
 import type { ObjectId } from "mongoose";
 import Link from "next/link";
@@ -48,6 +49,7 @@ import {
     useMemo,
     useState,
 } from "react";
+import { PrintOrderDialog } from "@/components/dialog/print-order-dialog";
 
 type CellValue = Array<
     | string
@@ -118,6 +120,10 @@ export default function CateringOrderTable({
     isPending: boolean;
     orders: CateringDocumentPopulate[];
 }) {
+    const [dialogOpen, setDialogOpen] = useState(false);
+    const [printAbleOrder, setPrintAbleOrder] =
+        useState<CateringDocumentPopulate | null>(null);
+
     const { data: session } = authClient.useSession();
     const userRole = session?.user.role;
 
@@ -181,7 +187,7 @@ export default function CateringOrderTable({
     const sortedItems = useMemo(() => [...items], [items]);
 
     const renderCell = useCallback(
-        (order: CateringDocument, columnKey: Key) => {
+        (order: CateringDocumentPopulate, columnKey: Key) => {
             const cellValue = order[columnKey as keyof CateringDocument];
 
             // biome-ignore lint/nursery/noUnnecessaryConditions: <Ignore>
@@ -249,6 +255,15 @@ export default function CateringOrderTable({
                 case "actions":
                     return (
                         <div className="flex items-center justify-center gap-2.5">
+                            <button
+                                type="button"
+                                onClick={() => {
+                                    setDialogOpen(true);
+                                    setPrintAbleOrder(order);
+                                }}
+                            >
+                                <Printer size={18} />
+                            </button>
                             <Link href={`orders/catering-${order.orderId}`}>
                                 <Eye
                                     className="stroke-2 text-muted-foreground"
@@ -437,12 +452,12 @@ export default function CateringOrderTable({
                             orderType="catering"
                             printType="summary"
                         />
-                        <DatePickerWithRange
+                        {/* <DatePickerWithRange
                             disabled={orders.length === 0}
                             label="Print Stickers"
                             orderType="catering"
                             printType="sticker"
-                        />
+                        /> */}
                     </div>
                 </div>
                 <div className="flex items-center justify-between">
@@ -517,49 +532,59 @@ export default function CateringOrderTable({
     ]);
 
     return (
-        <Table
-            aria-label="Example table with custom cells, pagination and sorting"
-            bottomContent={bottomContent}
-            bottomContentPlacement="outside"
-            classNames={{
-                wrapper: "max-h-[382px] scrollbar-none border shadow-md px-3",
-            }}
-            isHeaderSticky
-            topContent={topContent}
-            topContentPlacement="outside"
-        >
-            <TableHeader columns={headerColumns}>
-                {(column: {
-                    uid: string;
-                    sortable?: boolean;
-                    name: string;
-                }) => (
-                    <TableColumn
-                        align={column.uid === "actions" ? "center" : "start"}
-                        allowsSorting={column.sortable}
-                        key={column.uid}
-                    >
-                        {column.name}
-                    </TableColumn>
-                )}
-            </TableHeader>
-            <TableBody
-                emptyContent={"No orders found"}
-                isLoading={isPending}
-                items={sortedItems}
-                loadingContent={<Loader2 className="animate-spin" />}
+        <>
+            <Table
+                aria-label="Example table with custom cells, pagination and sorting"
+                bottomContent={bottomContent}
+                bottomContentPlacement="outside"
+                classNames={{
+                    wrapper:
+                        "max-h-[382px] scrollbar-none border shadow-md px-3",
+                }}
+                isHeaderSticky
+                topContent={topContent}
+                topContentPlacement="outside"
             >
-                {(item: CateringDocumentPopulate) => (
-                    <TableRow key={item._id.toString()}>
-                        {(columnKey) => (
-                            <TableCell className="whitespace-nowrap">
-                                {/* @ts-expect-error: renderCell doesn't take CateringDocPopulate type */}
-                                {renderCell(item, columnKey)}
-                            </TableCell>
-                        )}
-                    </TableRow>
-                )}
-            </TableBody>
-        </Table>
+                <TableHeader columns={headerColumns}>
+                    {(column: {
+                        uid: string;
+                        sortable?: boolean;
+                        name: string;
+                    }) => (
+                        <TableColumn
+                            align={
+                                column.uid === "actions" ? "center" : "start"
+                            }
+                            allowsSorting={column.sortable}
+                            key={column.uid}
+                        >
+                            {column.name}
+                        </TableColumn>
+                    )}
+                </TableHeader>
+                <TableBody
+                    emptyContent={"No orders found"}
+                    isLoading={isPending}
+                    items={sortedItems}
+                    loadingContent={<Loader2 className="animate-spin" />}
+                >
+                    {(item: CateringDocumentPopulate) => (
+                        <TableRow key={item._id.toString()}>
+                            {(columnKey) => (
+                                <TableCell className="whitespace-nowrap">
+                                    {/* @ts-expect-error: renderCell doesn't take CateringDocPopulate type */}
+                                    {renderCell(item, columnKey)}
+                                </TableCell>
+                            )}
+                        </TableRow>
+                    )}
+                </TableBody>
+            </Table>
+            <PrintOrderDialog
+                open={dialogOpen}
+                onOpenChange={setDialogOpen}
+                order={printAbleOrder}
+            />
+        </>
     );
 }

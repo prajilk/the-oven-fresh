@@ -17,6 +17,7 @@ import {
 } from "../ui/dialog";
 import CustomFormContent from "./custom-form-content";
 import { CateringCustomItemState } from "@/lib/types/catering/catering-order-state";
+import type { ObjectId } from "mongoose";
 
 const AddCustomItemDirectDialog = ({
     children,
@@ -74,7 +75,7 @@ const AddCustomItemDirectDialog = ({
         setCustomItems((prev) => [
             ...prev,
             {
-                _id: generateOrderId(),
+                _id: generateOrderId() as unknown as ObjectId,
                 ...submitData,
             },
         ]);

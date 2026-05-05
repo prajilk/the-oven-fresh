@@ -411,12 +411,12 @@ export default function TiffinOrderTable({
                             orderType="tiffin"
                             printType="summary"
                         />
-                        <DatePickerWithRange
+                        {/* <DatePickerWithRange
                             disabled={orders.length === 0}
                             label="Print Stickers"
                             orderType="tiffin"
                             printType="sticker"
-                        />
+                        /> */}
                     </div>
                 </div>
                 <div className="flex items-center justify-between">

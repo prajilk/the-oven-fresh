@@ -10,6 +10,7 @@ import {
     Package2,
     Pencil,
     Plus,
+    Printer,
     Trash2,
     Truck,
     XCircle,
@@ -57,6 +58,7 @@ import { Show } from "../show";
 import { Input } from "../ui/input";
 import LoadingButton from "../ui/loading-button";
 import { useQueryClient } from "@tanstack/react-query";
+import { PrintOrderDialog } from "../dialog/print-order-dialog";
 
 const getStatusIcon = (status: string) => {
     switch (status) {
@@ -107,6 +109,9 @@ export default function CateringOrderDetails({
     const [deliveryOrPickup, setDeliveryOrPickup] = useState<
         "DELIVERED" | "PICKUP"
     >("DELIVERED");
+    const [dialogOpen, setDialogOpen] = useState(false);
+    const [printAbleOrder, setPrintAbleOrder] =
+        useState<CateringDocumentPopulate | null>(null);
 
     const queryClient = useQueryClient();
 
@@ -228,6 +233,7 @@ export default function CateringOrderDetails({
                 rate: item.rate,
                 quantity: item.quantity,
                 unit: item.unit,
+                _id: item._id,
             }));
         }
 
@@ -337,6 +343,17 @@ export default function CateringOrderDetails({
                     </div>
                 </div>
                 <div className="flex items-center flex-wrap gap-4">
+                    <ShadButton
+                        size={"icon"}
+                        variant={"outline"}
+                        type="button"
+                        onClick={() => {
+                            setDialogOpen(true);
+                            setPrintAbleOrder(orderData);
+                        }}
+                    >
+                        <Printer size={18} />
+                    </ShadButton>
                     <LoadingButton
                         className="mr-2 flex items-center gap-2 border-green-200 text-green-500 hover:bg-green-100 hover:text-green-500"
                         isLoading={loading}
@@ -923,6 +940,13 @@ export default function CateringOrderDetails({
                 setOpen={closeSettlementDialog}
                 updateOrderStatus={updateOrderStatus}
                 deliveryOrPickup={deliveryOrPickup}
+            />
+
+            {/* Print Order Dialog */}
+            <PrintOrderDialog
+                open={dialogOpen}
+                onOpenChange={setDialogOpen}
+                order={printAbleOrder}
             />
         </div>
     );

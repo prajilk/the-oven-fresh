@@ -150,6 +150,8 @@ export const ZodSupplierSchema = z.object({
 });
 
 export const ZodPerHeadQuotationSchema = z.object({
+    quotationId: z.string().min(5).max(100),
+    idSuffix: z.string().length(5),
     shopAddress: z.string().min(3).max(150),
     billTo: z.string().optional(),
     attendedBy: z.string().optional(),
@@ -168,6 +170,8 @@ export const ZodPerHeadQuotationSchema = z.object({
 });
 
 export const ZodItemizedQuotationSchema = z.object({
+    quotationId: z.string().min(5).max(100),
+    idSuffix: z.string().length(5),
     shopAddress: z.string().min(3).max(150),
     billTo: z.string().optional(),
     attendedBy: z.string().optional(),

@@ -304,6 +304,21 @@ function isValidDate(stringDate: string) {
     return !Number.isNaN(Date.parse(stringDate));
 }
 
+function objectToQuery(obj: Record<string, string>): string {
+    const params = new URLSearchParams();
+
+    for (const key in obj) {
+        params.append(key, obj[key]);
+    }
+
+    return params.toString();
+}
+
+function splitId(input: string): [string, string] {
+    const splitIndex = input.length - 6;
+    return [input.slice(0, splitIndex), input.slice(splitIndex + 1)];
+}
+
 export {
     cn,
     isRestricted,
@@ -322,4 +337,6 @@ export {
     capitalizeName,
     formatTimezone,
     isValidDate,
+    objectToQuery,
+    splitId,
 };

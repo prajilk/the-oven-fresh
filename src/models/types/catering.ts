@@ -26,6 +26,7 @@ export type CateringDocument = {
         rate: number;
         quantity: number;
         unit: string;
+        _id: mongoose.Schema.Types.ObjectId;
     }[];
     advancePaid: number;
     pendingBalance: number;

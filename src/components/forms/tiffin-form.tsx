@@ -84,6 +84,9 @@ export default function TiffinForm() {
 
     function onSuccess(queryClient: QueryClient) {
         queryClient.invalidateQueries({ queryKey: ["order", "tiffin"] });
+        queryClient.invalidateQueries({
+            queryKey: ["order", "stats", "reminder"],
+        });
         toast.success("Order created successfully!");
         setConfirmOrderOpen(false);
         resetForm();

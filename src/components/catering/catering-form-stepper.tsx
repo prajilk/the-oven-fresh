@@ -61,6 +61,9 @@ export default function CateringFormStepper() {
 
     function onSuccess(queryClient: QueryClient) {
         queryClient.invalidateQueries({ queryKey: ["order", "catering"] });
+        queryClient.invalidateQueries({
+            queryKey: ["order", "stats", "reminder"],
+        });
         toast.success("Order created successfully!");
         setActiveStep(0);
         resetForm();

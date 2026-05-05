@@ -38,6 +38,8 @@ import { addQuotationAction } from "@/actions/add-quotation-action";
 import z from "zod";
 import QuotationSentDialog from "../dialog/quotation-sent-dialog";
 import getQueryClient from "@/lib/query-utils/get-query-client";
+import { nanoid } from "nanoid";
+import { editQuotationAction } from "@/actions/edit-quotation-action";
 
 interface SubItem {
     id: string;
@@ -54,7 +56,11 @@ interface Item {
     showSubItems: boolean;
 }
 
+const quotationId = nanoid(5).toUpperCase();
+
 const defaultItemized = {
+    quotationId: "",
+    idSuffix: quotationId,
     shopAddress: "",
     billTo: "",
     attendedBy: "",
@@ -64,20 +70,34 @@ const defaultItemized = {
     whatsappNumber: "",
 };
 
-export default function ItemizedQuotation() {
-    const [itemized, setItemized] = useState(defaultItemized);
+export default function ItemizedQuotation({
+    data,
+    orderItems,
+    edit = false,
+}: {
+    data?: typeof defaultItemized;
+    orderItems?: Item[];
+    edit?: boolean;
+}) {
+    const [itemized, setItemized] = useState(
+        edit && data ? data : defaultItemized
+    );
     const [isEditingAddress, setIsEditingAddress] = useState(false);
-    const [items, setItems] = useState<Item[]>([
-        {
-            id: "1",
-            name: "",
-            quantity: "",
-            unit: "",
-            rate: "",
-            subItems: [],
-            showSubItems: false,
-        },
-    ]);
+    const [items, setItems] = useState<Item[]>(
+        edit && orderItems
+            ? orderItems
+            : [
+                  {
+                      id: "1",
+                      name: "",
+                      quantity: "",
+                      unit: "",
+                      rate: "",
+                      subItems: [],
+                      showSubItems: false,
+                  },
+              ]
+    );
     const [showPrintDialog, setShowPrintDialog] = useState(false);
     const [loading, setLoading] = useState(false);
 
@@ -127,14 +147,24 @@ export default function ItemizedQuotation() {
         setLoading(true);
 
         const promise = async () => {
-            const res = await addQuotationAction(
-                result.data as z.infer<typeof ZodItemizedQuotationSchema>,
-                sentToWhatsApp
-            );
+            const res = edit
+                ? await editQuotationAction(
+                      result.data as z.infer<typeof ZodItemizedQuotationSchema>,
+                      sentToWhatsApp
+                  )
+                : await addQuotationAction(
+                      result.data as z.infer<typeof ZodItemizedQuotationSchema>,
+                      sentToWhatsApp
+                  );
             setLoading(false);
             if (res.success) {
-                setItemized(defaultItemized);
-                setItems([]);
+                if (!edit) {
+                    setItemized((prev) => ({
+                        ...defaultItemized,
+                        shopAddress: prev.shopAddress,
+                    }));
+                    setItems([]);
+                }
                 queryClient.invalidateQueries({
                     queryKey: ["quotation"],
                 });
@@ -151,10 +181,17 @@ export default function ItemizedQuotation() {
         };
 
         toast.promise(promise(), {
-            loading: "Creating quotation...",
-            success: () => "Quotation created successfully.",
+            loading: edit ? "Updating quotation..." : "Creating quotation...",
+            success: () =>
+                edit
+                    ? "Quotation updated successfully."
+                    : "Quotation created successfully.",
             error: ({ error }) =>
-                error ? error : "Failed to create quotation.",
+                error
+                    ? error
+                    : edit
+                    ? "Failed to update quotation."
+                    : "Failed to create quotation.",
         });
     }
 
@@ -304,6 +341,23 @@ export default function ItemizedQuotation() {
                         <CardTitle className="text-lg">Bill To</CardTitle>
                     </CardHeader>
                     <CardContent className="pt-4">
+                        <div className="flex items-center border rounded-md mb-3">
+                            <Input
+                                className="focus-visible:ring-0 m-1"
+                                placeholder="Quotation ID"
+                                pattern="[a-zA-Z0-9]+"
+                                value={itemized.quotationId}
+                                onChange={(e) =>
+                                    setItemized((prev) => ({
+                                        ...prev,
+                                        quotationId: e.target.value,
+                                    }))
+                                }
+                            />
+                            <span className="text-muted-foreground mr-2 whitespace-nowrap">
+                                -{edit ? data?.idSuffix : quotationId}
+                            </span>
+                        </div>
                         <Textarea
                             value={itemized.billTo}
                             onChange={(e) => {

@@ -22,8 +22,14 @@ import { addQuotationAction } from "@/actions/add-quotation-action";
 import LoadingButton from "../ui/loading-button";
 import QuotationSentDialog from "../dialog/quotation-sent-dialog";
 import getQueryClient from "@/lib/query-utils/get-query-client";
+import { nanoid } from "nanoid";
+import { editQuotationAction } from "@/actions/edit-quotation-action";
+
+const quotationId = nanoid(5).toUpperCase();
 
 const defaultPerHead = {
+    quotationId: "",
+    idSuffix: quotationId,
     shopAddress: "",
     billTo: "",
     attendedBy: "",
@@ -37,8 +43,16 @@ const defaultPerHead = {
     whatsappNumber: "",
 };
 
-export default function PerHeadQuotation() {
-    const [perHead, setPerHead] = useState(defaultPerHead);
+export default function PerHeadQuotation({
+    data,
+    edit = false,
+}: {
+    data?: typeof defaultPerHead;
+    edit?: boolean;
+}) {
+    const [perHead, setPerHead] = useState(
+        edit && data ? data : defaultPerHead
+    );
     const [isEditingAddress, setIsEditingAddress] = useState(false);
     const [showPrintDialog, setShowPrintDialog] = useState(false);
     const [loading, setLoading] = useState(false);
@@ -93,11 +107,18 @@ export default function PerHeadQuotation() {
         setLoading(true);
 
         const promise = async () => {
-            const res = await addQuotationAction(result.data, sentToWhatsApp);
+            const res = edit
+                ? await editQuotationAction(result.data, sentToWhatsApp)
+                : await addQuotationAction(result.data, sentToWhatsApp);
             setLoading(false);
 
             if (res.success) {
-                setPerHead(defaultPerHead);
+                if (!edit) {
+                    setPerHead((prev) => ({
+                        ...defaultPerHead,
+                        shopAddress: prev.shopAddress,
+                    }));
+                }
                 queryClient.invalidateQueries({
                     queryKey: ["quotation"],
                 });
@@ -114,10 +135,17 @@ export default function PerHeadQuotation() {
         };
 
         toast.promise(promise(), {
-            loading: "Creating quotation...",
-            success: () => "Quotation created successfully.",
+            loading: edit ? "Updating quotation..." : "Creating quotation...",
+            success: () =>
+                edit
+                    ? "Quotation updated successfully."
+                    : "Quotation created successfully.",
             error: ({ error }) =>
-                error ? error : "Failed to create quotation.",
+                error
+                    ? error
+                    : edit
+                    ? "Failed to update quotation."
+                    : "Failed to create quotation.",
         });
     }
 
@@ -176,6 +204,24 @@ export default function PerHeadQuotation() {
                         <CardTitle className="text-lg">Bill To</CardTitle>
                     </CardHeader>
                     <CardContent className="pt-4">
+                        <div className="flex items-center border rounded-md mb-3">
+                            <Input
+                                className="focus-visible:ring-0 m-1"
+                                placeholder="Quotation ID"
+                                pattern="[a-zA-Z0-9]+"
+                                disabled={edit}
+                                value={perHead.quotationId}
+                                onChange={(e) =>
+                                    setPerHead((prev) => ({
+                                        ...prev,
+                                        quotationId: e.target.value,
+                                    }))
+                                }
+                            />
+                            <span className="text-muted-foreground mr-2 whitespace-nowrap">
+                                -{edit ? data?.idSuffix : quotationId}
+                            </span>
+                        </div>
                         <Textarea
                             value={perHead.billTo}
                             onChange={(e) =>
