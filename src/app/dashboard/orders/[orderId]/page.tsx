@@ -1,10 +1,10 @@
 import { Box, Stack } from "@mui/material";
-import { notFound } from "next/navigation";
 import CateringOrderDetails from "@/components/catering/order-details";
 import TiffinOrderDetails from "@/components/tiffin/order-details";
 import { getOrderServer } from "@/lib/api/order/get-order";
 import type { CateringDocumentPopulate } from "@/models/types/catering";
 import type { TiffinDocumentPopulate } from "@/models/types/tiffin";
+import { type ReactNode } from "react";
 
 const OrderPage = async ({
     params,
@@ -19,17 +19,58 @@ const OrderPage = async ({
     const mid = (await searchParams).mid;
 
     if (orderType !== "catering" && orderType !== "tiffin") {
-        return notFound();
+        return (
+            <Base>
+                <h1 className="text-lg">Order not found</h1>
+                <p>Invalid order type.</p>
+            </Base>
+        );
+    }
+
+    if (orderType === "tiffin" && !mid) {
+        return (
+            <Base>
+                <h1 className="text-lg">Order not found</h1>
+                <p>No MID provided.</p>
+            </Base>
+        );
     }
 
     const order = await getOrderServer(orderId, orderType, mid as string).catch(
-        () => notFound()
+        () => (
+            <Base>
+                <h1>Sorry, something went wrong.</h1>
+            </Base>
+        )
     );
 
     if (!order) {
-        return notFound();
+        return (
+            <Base>
+                <h1 className="text-lg">Order not found</h1>
+                <p>Order you are looking for does not exist.</p>
+            </Base>
+        );
     }
 
+    return (
+        <Base>
+            {orderType === "catering" ? (
+                <CateringOrderDetails
+                    orderData={order as CateringDocumentPopulate}
+                />
+            ) : (
+                <TiffinOrderDetails
+                    orderData={order as TiffinDocumentPopulate}
+                />
+            )}
+        </Base>
+    );
+};
+
+export default OrderPage;
+
+function Base({ children }: { children: ReactNode }) {
     return (
         <Box className="flex-grow overflow-auto" component="main">
             <Stack
@@ -42,18 +83,8 @@ const OrderPage = async ({
                     mt: { xs: 8, md: 2 },
                 }}
             >
-                {orderType === "catering" ? (
-                    <CateringOrderDetails
-                        orderData={order as CateringDocumentPopulate}
-                    />
-                ) : (
-                    <TiffinOrderDetails
-                        orderData={order as TiffinDocumentPopulate}
-                    />
-                )}
+                {children}
             </Stack>
         </Box>
     );
-};
-
-export default OrderPage;
+}

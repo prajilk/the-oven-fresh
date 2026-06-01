@@ -7,7 +7,7 @@ import Supplier from "@/models/supplierModel";
 export async function deleteSupplierAction(id: string) {
     try {
         // Authorize the user
-        await withDbConnectAndActionAuth();
+        await withDbConnectAndActionAuth(["admin", "manager"]);
 
         await Supplier.deleteOne({ _id: id });
 

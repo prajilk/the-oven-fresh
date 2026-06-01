@@ -6,7 +6,7 @@ export const ZodAuthSchema = z.object({
 });
 
 export const ZodUserSchemaWithPassword = z.object({
-    id: z.string({ message: "Staff ID is required!" }),
+    // id: z.string({ message: "Staff ID is required!" }),
     username: z.string().min(3).max(15),
     displayUsername: z.string().min(3).max(15),
     password: z
@@ -15,7 +15,7 @@ export const ZodUserSchemaWithPassword = z.object({
             message: "Password must be 8 or more characters long",
         })
         .optional(),
-    role: z.enum(["manager", "delivery", "admin"]),
+    role: z.enum(["manager", "staff", "delivery", "admin"]),
     store: z.string({ message: "Store ID is required!" }),
 });
 

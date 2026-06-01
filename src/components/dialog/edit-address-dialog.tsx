@@ -184,8 +184,10 @@ const EditAddressDialog = ({
                 });
                 return "Delivery address updated successfully.";
             },
-            error: (error) => {
-                return error.error || "Failed to update delivery address.";
+            error: (err) => {
+                if (err.error === "Unauthorized")
+                    return "Forbidden: You are not authorized to perform this action!";
+                else return "Failed to update delivery address.";
             },
         });
     };

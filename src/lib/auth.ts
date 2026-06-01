@@ -8,7 +8,7 @@ import {
 import mongoose from "mongoose";
 import { headers } from "next/headers";
 import connectDB from "@/config/mongoose";
-import { ac, admin, delivery, manager } from "./permissions";
+import { ac, admin, delivery, manager, staff } from "./permissions";
 
 const mongooseConn = await connectDB();
 
@@ -21,6 +21,7 @@ export const auth = betterAuth({
             roles: {
                 admin,
                 manager,
+                staff,
                 delivery,
             },
         }),

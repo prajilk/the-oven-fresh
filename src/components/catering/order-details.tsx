@@ -139,10 +139,13 @@ export default function CateringOrderDetails({
                 });
                 return `Order status has been updated to ${newStatus}`;
             },
-            error: () => {
+            error: (err) => {
                 setLoading(false);
                 setShowSettlementDialog(false);
-                return "Failed to update order status.";
+                setOrderStatus(orderData?.status);
+                if (err.error === "Unauthorized")
+                    return "Forbidden: You are not authorized to perform this action!";
+                else return "Failed to update order status.";
             },
         });
     };
@@ -270,9 +273,16 @@ export default function CateringOrderDetails({
                 setLoading(false);
                 return "Order items updated successfully.";
             },
-            error: () => {
+            error: (err) => {
                 setLoading(false);
-                return "Failed to update order items.";
+                if (itemType === "customItems") {
+                    setCustomItems(orderData?.customItems);
+                } else {
+                    setOrderItems(orderData?.items);
+                }
+                if (err.error === "Unauthorized")
+                    return "Forbidden: You are not authorized to perform this action!";
+                else return "Failed to update order items.";
             },
         });
     }

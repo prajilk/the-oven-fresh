@@ -105,7 +105,11 @@ const EditPaymentDialog = ({
             success: () => {
                 return "Payment details updated successfully.";
             },
-            error: "Failed to update payment details.",
+            error: (err) => {
+                if (err.error === "Unauthorized")
+                    return "Forbidden: You are not authorized to perform this action!";
+                else return "Failed to update payment details.";
+            },
         });
     };
 
@@ -188,7 +192,7 @@ const EditPaymentDialog = ({
         }));
     }
 
-    function managerDeliveryFeeChange() {
+    function manageDeliveryFeeChange() {
         setEditState((prev) => ({
             ...prev,
             deliveryCharge: false,
@@ -318,7 +322,7 @@ const EditPaymentDialog = ({
                         editState={editState.deliveryCharge}
                         itemKey="deliveryCharge"
                         itemLabel="Delivery Fee"
-                        onCheck={managerDeliveryFeeChange}
+                        onCheck={manageDeliveryFeeChange}
                         setEditState={setEditState}
                         setValueState={setValueState}
                         valueState={valueState.deliveryCharge}

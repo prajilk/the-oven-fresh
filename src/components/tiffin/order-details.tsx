@@ -118,6 +118,7 @@ export default function TiffinOrderDetails({
         toast.promise(promise(), {
             loading: "Updating order status...",
             success: () => {
+                setOrderStatus(orderData?.status);
                 setLoading(false);
                 setShowSettlementDialog(false);
                 queryClient.invalidateQueries({
@@ -125,10 +126,12 @@ export default function TiffinOrderDetails({
                 });
                 return `Order status has been updated to ${newStatus}`;
             },
-            error: () => {
+            error: (err) => {
                 setLoading(false);
                 setShowSettlementDialog(false);
-                return "Failed to update order status.";
+                if (err.error === "Unauthorized")
+                    return "Forbidden: You are not authorized to perform this action!";
+                else return "Failed to update order status.";
             },
         });
     };
@@ -156,10 +159,12 @@ export default function TiffinOrderDetails({
                 });
                 return "Order status has been updated";
             },
-            error: () => {
+            error: (err) => {
                 setLoading(false);
                 setEditDayStatus(false);
-                return "Failed to update order status.";
+                if (err.error === "Unauthorized")
+                    return "Forbidden: You are not authorized to perform this action!";
+                else return "Failed to update order items.";
             },
         });
     };

@@ -23,7 +23,7 @@ export async function updateOrderStatusAction(
 ) {
     try {
         // Authorize the user
-        await withDbConnectAndActionAuth();
+        await withDbConnectAndActionAuth(["admin", "manager"]);
 
         if (!orderId) {
             return { error: "Invalid order ID." };

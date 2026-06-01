@@ -1,25 +1,28 @@
-'use server';
+"use server";
 
-import mongoose from 'mongoose';
-import { withDbConnectAndActionAuth } from '@/lib/with-db-connect-and-auth';
+import mongoose from "mongoose";
+import { withDbConnectAndActionAuth } from "@/lib/with-db-connect-and-auth";
 
 export async function changeDeliveryBoyAction(staff: string, zone: number) {
-  try {
-    // Authorize the user
-    const { mongooseConn } = await withDbConnectAndActionAuth();
+    try {
+        // Authorize the user
+        const { mongooseConn } = await withDbConnectAndActionAuth([
+            "admin",
+            "manager",
+        ]);
 
-    await mongooseConn.connection.db
-      .collection('user')
-      .updateOne(
-        { _id: mongoose.Types.ObjectId.createFromHexString(staff) },
-        { $set: { zone } }
-      );
+        await mongooseConn.connection.db
+            .collection("user")
+            .updateOne(
+                { _id: mongoose.Types.ObjectId.createFromHexString(staff) },
+                { $set: { zone } }
+            );
 
-    return { success: true };
-  } catch (error) {
-    if (error instanceof Error) {
-      return { error: error.message };
+        return { success: true };
+    } catch (error) {
+        if (error instanceof Error) {
+            return { error: error.message };
+        }
+        return { error: "An unknown error occurred" };
     }
-    return { error: 'An unknown error occurred' };
-  }
 }

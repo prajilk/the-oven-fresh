@@ -9,7 +9,7 @@ import TiffinOrderStatus from "@/models/tiffinOrderStatusModel";
 
 async function getHandler(req: AuthenticatedRequest) {
     try {
-        if (isRestricted(req.user, ["admin", "manager"])) {
+        if (isRestricted(req.user, ["admin", "manager", "staff"])) {
             return error403();
         }
 

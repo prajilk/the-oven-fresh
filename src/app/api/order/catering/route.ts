@@ -21,7 +21,7 @@ import Store from "@/models/storeModel";
 // biome-ignore lint/complexity/noExcessiveCognitiveComplexity: <Ignore>
 async function postHandler(req: AuthenticatedRequest) {
     try {
-        if (isRestricted(req.user, ["admin", "manager"])) {
+        if (isRestricted(req.user, ["admin", "manager", "staff"])) {
             return error403();
         }
 
@@ -173,7 +173,7 @@ async function postHandler(req: AuthenticatedRequest) {
 
 async function getHandler(req: AuthenticatedRequest) {
     try {
-        if (isRestricted(req.user, ["admin", "manager"])) {
+        if (isRestricted(req.user, ["admin", "manager", "staff"])) {
             return error403();
         }
 
