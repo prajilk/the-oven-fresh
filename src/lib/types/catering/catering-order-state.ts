@@ -36,6 +36,7 @@ export type CateringItemsState = {
 };
 
 export type CateringCustomItemState = {
+    _id?: string;
     itemDescription: string;
     rate: number;
     quantity: number;

@@ -3,7 +3,7 @@
 import type { PlaceAutocompleteResult } from "@googlemaps/google-maps-services-js";
 import { Button } from "@heroui/button";
 import { Alert } from "@mui/material";
-import { format } from "date-fns";
+import { differenceInCalendarDays, format } from "date-fns";
 import { CalendarIcon, Pencil } from "lucide-react";
 import { useEffect, useState } from "react";
 import { toast } from "sonner";
@@ -42,17 +42,12 @@ function isGapInWeeks(
     endDate: Date,
     numberOfWeeks: number
 ): boolean {
-    // Calculate the difference in milliseconds
-    const millisecondsInDay = 24 * 60 * 60 * 1000;
-    const actualGapInMilliseconds =
-        new Date(format(endDate, "yyyy-MM-dd")).getTime() -
-        new Date(format(startDate, "yyyy-MM-dd")).getTime();
-
     // Calculate the actual number of days between the two dates
-    const actualGapInDays = actualGapInMilliseconds / millisecondsInDay;
+    // const actualGapInDays = actualGapInMilliseconds / millisecondsInDay;
+    const actualGapInDays = differenceInCalendarDays(endDate, startDate);
 
     // Check if the gap in days is exactly the expected number of weeks (numberOfWeeks * 7 days)
-    return actualGapInDays === numberOfWeeks * 7 - 3;
+    return actualGapInDays + 1 === numberOfWeeks * 7;
 }
 
 const EditAddressDialog = ({

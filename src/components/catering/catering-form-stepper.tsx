@@ -26,6 +26,7 @@ import { Button } from "../ui/button";
 import LoadingButton from "../ui/loading-button";
 import FinalSummary from "./final-summary/final-summary";
 import SelectItems from "./select-items";
+import { useCateringCustomMenu } from "@/api-hooks/catering/get-catering-custom-menu";
 
 const steps = ["Select Items", "Enter address", "Order summery"];
 
@@ -72,6 +73,7 @@ export default function CateringFormStepper() {
     // React queries
     const mutation = useCreateCateringOrder(onSuccess);
     const { data: menu, isPending } = useCateringMenu("false");
+    const { data: customMenu } = useCateringCustomMenu();
 
     const handleNext = () => {
         setActiveStep((prevActiveStep) => prevActiveStep + 1);
@@ -229,7 +231,11 @@ export default function CateringFormStepper() {
                     )}
                     {activeStep === 1 && (
                         <Box sx={{ mt: 2, mb: 1 }}>
-                            <SelectItems data={menu} isPending={isPending} />
+                            <SelectItems
+                                data={menu}
+                                customMenu={customMenu}
+                                isPending={isPending}
+                            />
                         </Box>
                     )}
                     {activeStep === 2 && (

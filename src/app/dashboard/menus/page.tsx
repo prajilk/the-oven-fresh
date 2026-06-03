@@ -9,6 +9,8 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { getCateringCategoryServer } from "@/lib/api/category/get-catering-category";
 import { getCateringMenuServer } from "@/lib/api/menu/get-catering-menu";
 import { getTiffinMenuServer } from "@/lib/api/menu/get-tiffin-menu";
+import { getCateringCustomMenuServer } from "@/lib/api/menu/get-catering-custom-menu";
+import CateringCustomMenuTable from "@/components/data-table/catering/custom-menu-table";
 
 const MenusPage = () => {
     return (
@@ -38,6 +40,9 @@ const MenusPage = () => {
                     <Tabs defaultValue="catering">
                         <TabsList>
                             <TabsTrigger value="catering">Catering</TabsTrigger>
+                            <TabsTrigger value="catering-custom">
+                                Catering Custom
+                            </TabsTrigger>
                             <TabsTrigger value="category">Category</TabsTrigger>
                             <TabsTrigger value="tiffin">Tiffin</TabsTrigger>
                         </TabsList>
@@ -58,6 +63,25 @@ const MenusPage = () => {
                                     queryKey={["menu", "catering"]}
                                 >
                                     <CateringMenuTable />
+                                </ServerWrapper>
+                            </Suspense>
+                        </TabsContent>
+                        <TabsContent value="catering-custom">
+                            <Suspense
+                                fallback={
+                                    <div className="flex items-center justify-center gap-1 py-10">
+                                        <Loader2 className="animate-spin" />{" "}
+                                        Loading...
+                                    </div>
+                                }
+                            >
+                                <ServerWrapper
+                                    queryFn={() =>
+                                        getCateringCustomMenuServer()
+                                    }
+                                    queryKey={["menu", "catering-custom"]}
+                                >
+                                    <CateringCustomMenuTable />
                                 </ServerWrapper>
                             </Suspense>
                         </TabsContent>

@@ -1,6 +1,4 @@
-import { Radio, RadioGroup } from "@heroui/radio";
 import { Button } from "../ui/button";
-import { Card } from "../ui/card";
 import { Input } from "../ui/input";
 import { Label } from "../ui/label";
 import {
@@ -26,6 +24,7 @@ type CustomFormContentProps = {
     setFormData: Dispatch<SetStateAction<FormData>>;
     errors: Record<string, string>;
     handleOpenChange: (newOpen: boolean) => void;
+    disabled?: boolean;
 };
 
 const CustomFormContent = ({
@@ -33,6 +32,7 @@ const CustomFormContent = ({
     setFormData,
     errors,
     handleOpenChange,
+    disabled = false,
 }: CustomFormContentProps) => {
     return (
         <>
@@ -157,11 +157,12 @@ const CustomFormContent = ({
                     variant="outline"
                     onClick={() => handleOpenChange(false)}
                     className="flex-1"
+                    disabled={disabled}
                 >
                     Cancel
                 </Button>
-                <Button type="submit" className="flex-1">
-                    Add Item
+                <Button type="submit" className="flex-1" disabled={disabled}>
+                    Save changes
                 </Button>
             </div>
         </>

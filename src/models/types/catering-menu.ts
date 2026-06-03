@@ -1,23 +1,31 @@
-import type mongoose from 'mongoose';
-import type { CateringCategoryDocument } from './catering-category';
+import type mongoose from "mongoose";
+import type { CateringCategoryDocument } from "./catering-category";
 
 export type CateringMenuDocument = {
-  _id: string;
-  category: mongoose.Schema.Types.ObjectId;
-  name: string;
-  smallPrice?: number;
-  smallServingSize?: string;
-  mediumPrice?: number;
-  mediumServingSize?: string;
-  largePrice?: number;
-  largeServingSize?: string;
-  variant: string | null;
-  image: string | null;
-  publicId: string | null;
-  disabled: boolean;
+    _id: string;
+    category: mongoose.Schema.Types.ObjectId;
+    name: string;
+    smallPrice?: number;
+    smallServingSize?: string;
+    mediumPrice?: number;
+    mediumServingSize?: string;
+    largePrice?: number;
+    largeServingSize?: string;
+    variant: string | null;
+    image: string | null;
+    publicId: string | null;
+    disabled: boolean;
 };
 
 export interface CateringMenuDocumentPopulate
-  extends Omit<CateringMenuDocument, 'category'> {
-  category: CateringCategoryDocument;
+    extends Omit<CateringMenuDocument, "category"> {
+    category: CateringCategoryDocument;
 }
+
+export type CateringCustomMenuDocument = {
+    _id: string;
+    itemDescription: string;
+    rate: number;
+    quantity: number;
+    unit: string;
+};

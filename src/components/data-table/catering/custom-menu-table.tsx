@@ -1,6 +1,5 @@
 "use client";
 
-import { Chip } from "@heroui/chip";
 import { Input } from "@heroui/input";
 import {
     Table,
@@ -11,116 +10,64 @@ import {
     TableRow,
 } from "@heroui/table";
 import { ListFilter, Loader2, Pencil, Plus } from "lucide-react";
-import Image from "next/image";
-import Link from "next/link";
-import React from "react";
-import { deleteCateringMenuAction } from "@/actions/delete-catering-menu-action";
-import { useCateringMenu } from "@/api-hooks/catering/get-catering-menu";
+import { type Key, useCallback, useMemo, useState } from "react";
 import DeleteDialog from "@/components/dialog/delete-dialog";
 import { Button } from "@/components/ui/button";
-import { appendBracket } from "@/lib/utils";
-import type { CateringMenuDocumentPopulate } from "@/models/types/catering-menu";
+import type { CateringCustomMenuDocument } from "@/models/types/catering-menu";
+import { useCateringCustomMenu } from "@/api-hooks/catering/get-catering-custom-menu";
+import { deleteCateringCustomMenuAction } from "@/actions/delete-catering-custom-menu-action";
+import SaveCustomItemDialog from "@/components/dialog/save-custom-item";
 
 export const columns = [
-    { name: "IMAGE", uid: "image" },
-    { name: "NAME", uid: "name" },
-    { name: "CATEGORY", uid: "category" },
-    { name: "SMALL", uid: "smallPrice" },
-    { name: "MEDIUM", uid: "mediumPrice" },
-    { name: "LARGE", uid: "largePrice" },
-    { name: "DISABLED", uid: "disabled" },
+    { name: "ITEM DESCRIPTION", uid: "itemDescription" },
+    { name: "RATE", uid: "rate" },
+    { name: "QUANTITY", uid: "quantity" },
+    { name: "UNIT", uid: "unit" },
     { name: "ACTIONS", uid: "actions" },
 ];
 
-export default function CateringMenuTable() {
-    const [filterValue, setFilterValue] = React.useState("");
+export default function CateringCustomMenuTable() {
+    const [filterValue, setFilterValue] = useState("");
 
-    const { data: menus, isPending } = useCateringMenu();
+    const { data: menus, isPending } = useCateringCustomMenu();
 
     const hasSearchFilter = Boolean(filterValue);
 
-    const filteredItems = React.useMemo(() => {
+    const filteredItems = useMemo(() => {
         let filteredMenus = menus ? [...menus] : [];
 
         if (hasSearchFilter) {
             filteredMenus = filteredMenus.filter((menu) =>
-                menu.name.toLowerCase().includes(filterValue.toLowerCase())
+                menu.itemDescription
+                    .toLowerCase()
+                    .includes(filterValue.toLowerCase())
             );
         }
 
         return filteredMenus;
     }, [menus, filterValue, hasSearchFilter]);
 
-    const renderCell = React.useCallback(
+    const renderCell = useCallback(
         // biome-ignore lint/complexity/noExcessiveCognitiveComplexity: <Ignore>
-        (menu: CateringMenuDocumentPopulate, columnKey: React.Key) => {
+        (menu: CateringCustomMenuDocument, columnKey: Key) => {
             const cellValue =
-                menu[columnKey as keyof CateringMenuDocumentPopulate];
+                menu[columnKey as keyof CateringCustomMenuDocument];
 
             // biome-ignore lint/nursery/noUnnecessaryConditions: <Ignore>
             switch (columnKey) {
-                case "category":
-                    // @ts-expect-error: cellValue is of type CateringMenuDocumentPopulate
-                    return cellValue?.name;
-                case "name":
-                    return appendBracket(cellValue as string, menu.variant);
-                case "smallPrice":
-                    return cellValue
-                        ? appendBracket(
-                              cellValue as string,
-                              menu.smallServingSize,
-                              true
-                          )
-                        : "--";
-                case "mediumPrice":
-                    return cellValue
-                        ? appendBracket(
-                              cellValue as string,
-                              menu.mediumServingSize,
-                              true
-                          )
-                        : "--";
-                case "largePrice":
-                    return cellValue
-                        ? appendBracket(
-                              cellValue as string,
-                              menu.largeServingSize,
-                              true
-                          )
-                        : "--";
-                case "image":
-                    return (
-                        <Image
-                            alt="menu"
-                            className="rounded-md"
-                            height={40}
-                            src={
-                                (cellValue as string) || "/fsr-placeholder.webp"
-                            }
-                            width={40}
-                        />
-                    );
-                case "disabled":
-                    return (
-                        <Chip
-                            color={cellValue ? "primary" : "secondary"}
-                            size="sm"
-                        >
-                            {cellValue ? "Yes" : "No"}
-                        </Chip>
-                    );
                 case "actions":
                     return (
                         <div className="flex items-center justify-center gap-2.5">
-                            <Button asChild size="sm" variant="ghost">
-                                <Link
-                                    href={`/dashboard/menus/edit?id=${menu._id}`}
-                                >
+                            <SaveCustomItemDialog
+                                action="edit"
+                                defaultItem={menu}
+                            >
+                                <Button size="sm" variant="ghost">
                                     <Pencil size={15} />
-                                </Link>
-                            </Button>
+                                </Button>
+                            </SaveCustomItemDialog>
                             <DeleteDialog
-                                action={deleteCateringMenuAction}
+                                action={deleteCateringCustomMenuAction}
                                 errorMsg="Failed to delete item."
                                 id={menu._id}
                                 loadingMsg="Deleting item..."
@@ -136,7 +83,7 @@ export default function CateringMenuTable() {
         []
     );
 
-    const onSearchChange = React.useCallback((value?: string) => {
+    const onSearchChange = useCallback((value?: string) => {
         if (value) {
             setFilterValue(value);
         } else {
@@ -144,11 +91,11 @@ export default function CateringMenuTable() {
         }
     }, []);
 
-    const onClear = React.useCallback(() => {
+    const onClear = useCallback(() => {
         setFilterValue("");
     }, []);
 
-    const topContent = React.useMemo(() => {
+    const topContent = useMemo(() => {
         return (
             <div className="flex flex-col gap-4">
                 <div className="flex flex-wrap items-end gap-3">
@@ -173,16 +120,15 @@ export default function CateringMenuTable() {
                         value={filterValue}
                     />
                     <div className="flex flex-1 justify-end gap-2">
-                        <Button
-                            asChild
-                            className="flex items-center gap-2"
-                            size={"sm"}
-                        >
-                            <Link href={"/dashboard/menus/add"}>
+                        <SaveCustomItemDialog>
+                            <Button
+                                className="flex items-center gap-2"
+                                size={"sm"}
+                            >
                                 <Plus />
-                                Add catering menu
-                            </Link>
-                        </Button>
+                                Add menu
+                            </Button>
+                        </SaveCustomItemDialog>
                     </div>
                 </div>
                 <div className="flex items-center justify-between">
@@ -226,9 +172,10 @@ export default function CateringMenuTable() {
                 items={filteredItems}
                 loadingContent={<Loader2 className="animate-spin" />}
             >
-                {(item: CateringMenuDocumentPopulate) => (
+                {(item: CateringCustomMenuDocument) => (
                     <TableRow key={item._id}>
                         {(columnKey) => (
+                            // biome-ignore lint/nursery/noUnnecessaryConditions: <Ignore>
                             <TableCell>{renderCell(item, columnKey)}</TableCell>
                         )}
                     </TableRow>

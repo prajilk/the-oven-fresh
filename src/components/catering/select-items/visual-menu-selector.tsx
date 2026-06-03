@@ -7,14 +7,22 @@ import {
     CardTitle,
 } from "@/components/ui/card";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import type { CateringMenuDocumentPopulate } from "@/models/types/catering-menu";
+import type {
+    CateringCustomMenuDocument,
+    CateringMenuDocumentPopulate,
+} from "@/models/types/catering-menu";
 import MenuItemCard from "./menu-item-card";
+import CustomItemCard from "./custom-item-card";
 
 type VisualMenuSelectorProps = {
     menuItems: CateringMenuDocumentPopulate[];
+    customMenu: CateringCustomMenuDocument[];
 };
 
-export function VisualMenuSelector({ menuItems }: VisualMenuSelectorProps) {
+export function VisualMenuSelector({
+    menuItems,
+    customMenu,
+}: VisualMenuSelectorProps) {
     // Get unique categories
     const categories = Array.from(
         new Set(menuItems.map((item) => item.category.name))
@@ -39,12 +47,26 @@ export function VisualMenuSelector({ menuItems }: VisualMenuSelectorProps) {
             <CardContent className="px-3.5 pb-3.5 md:px-6 md:pb-6">
                 <Tabs className="w-full" defaultValue={categories[0]}>
                     <TabsList className="scrollbar-hide mb-4 flex justify-start overflow-x-scroll">
+                        <TabsTrigger value="custom-items">
+                            Custom Items
+                        </TabsTrigger>
                         {categories.map((category) => (
                             <TabsTrigger key={category} value={category}>
                                 {category}
                             </TabsTrigger>
                         ))}
                     </TabsList>
+
+                    <TabsContent value="custom-items">
+                        <div className="grid grid-cols-1 gap-4 md:grid-cols-2">
+                            {customMenu.map((item) => (
+                                <CustomItemCard
+                                    key={item._id.toString()}
+                                    item={item}
+                                />
+                            ))}
+                        </div>
+                    </TabsContent>
 
                     {categories.map((category) => (
                         <TabsContent key={category} value={category}>

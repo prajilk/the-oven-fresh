@@ -9,6 +9,7 @@ import TiffinForm from "@/components/forms/tiffin-form";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { getCateringMenuServer } from "@/lib/api/menu/get-catering-menu";
 import { getTiffinMenuServer } from "@/lib/api/menu/get-tiffin-menu";
+import { getCateringCustomMenuServer } from "@/lib/api/menu/get-catering-custom-menu";
 
 const Booking = async () => {
     const queryClient = new QueryClient({
@@ -20,6 +21,10 @@ const Booking = async () => {
         queryClient.prefetchQuery({
             queryKey: ["menu", "catering"],
             queryFn: () => getCateringMenuServer("false"),
+        }),
+        queryClient.prefetchQuery({
+            queryKey: ["menu", "catering-custom"],
+            queryFn: () => getCateringCustomMenuServer(),
         }),
         queryClient.prefetchQuery({
             queryKey: ["menu", "tiffin"], // Unique key for tiffin menu
